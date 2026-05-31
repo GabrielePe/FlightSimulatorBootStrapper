@@ -26,7 +26,8 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
     [ObservableProperty] private string _waitProcessName = string.Empty;
     /// <summary>-1 = wait indefinitely.</summary>
     [ObservableProperty] private int _waitTimeoutSeconds = 60;
-
+    // ── Privileges ────────────────────────────────────────────
+    [ObservableProperty] private bool _requiresElevation;
     // ── Shutdown ─────────────────────────────────────────────────
     [ObservableProperty] private bool _autoCloseSupported;
     [ObservableProperty] private CloseMethod _closeMethod = CloseMethod.GracefulClose;
@@ -50,6 +51,7 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         Phase = item.Phase;
         DelaySeconds = item.DelayBeforeLaunchMs / 1000;
         DelayAfterSeconds = item.DelayAfterLaunchMs / 1000;
+        RequiresElevation = item.RequiresElevation;
         AutoCloseSupported = item.AutoCloseSupported;
         CloseMethod = item.CloseMethod;
 
@@ -75,6 +77,7 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         item.Phase = Phase;
         item.DelayBeforeLaunchMs = DelaySeconds * 1000;
         item.DelayAfterLaunchMs = DelayAfterSeconds * 1000;
+        item.RequiresElevation = RequiresElevation;
         item.AutoCloseSupported = AutoCloseSupported;
         item.CloseMethod = CloseMethod;
         item.WaitForProcess = WaitForProcessEnabled && !string.IsNullOrWhiteSpace(WaitProcessName)

@@ -229,6 +229,7 @@ public partial class ProfileEditorPage : Page
         AutoCloseSupported = src.AutoCloseSupported,
         CloseMethod = src.CloseMethod,
         GracefulCloseTimeoutMs = src.GracefulCloseTimeoutMs,
+        RequiresElevation = src.RequiresElevation,
         WaitForProcess = src.WaitForProcess is null ? null : new()
         {
             ProcessName = src.WaitForProcess.ProcessName,
@@ -245,6 +246,7 @@ public partial class ProfileEditorPage : Page
         dst.Phase = src.Phase;
         dst.DelayBeforeLaunchMs = src.DelayBeforeLaunchMs;
         dst.DelayAfterLaunchMs = src.DelayAfterLaunchMs;
+        dst.RequiresElevation = src.RequiresElevation;
         dst.AutoCloseSupported = src.AutoCloseSupported;
         dst.CloseMethod = src.CloseMethod;
         dst.GracefulCloseTimeoutMs = src.GracefulCloseTimeoutMs;

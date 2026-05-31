@@ -68,7 +68,12 @@
 
             <TextBlock Text="Arguments (optional)" Margin="0,0,0,4"/>
             <TextBox Text="{Binding Arguments, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="0,0,0,0"/>
+                     Margin="0,0,0,10"/>
+
+            <TextBlock Text="Privileges" Margin="0,10,0,4"/>
+            <CheckBox Content="Requires administrator privileges (UAC elevation)"
+                      IsChecked="{Binding RequiresElevation}"
+                      ToolTip="Enable if this add-on shows a UAC prompt when launched manually. FSBS will launch it with the elevated token it already holds, skipping the prompt. Leave unchecked (default) for add-ons like TrackIR that must run at normal user level to communicate with MSFS."/>
         </StackPanel>
 
         <!-- ── Section: Launch order ─────────────────────────────── -->
