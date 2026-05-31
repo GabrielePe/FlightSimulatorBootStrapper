@@ -16,6 +16,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     // Tracks running processes keyed by LaunchItem.Id for shutdown management
     private readonly ConcurrentDictionary<Guid, (Process Process, LaunchItem Item)> _running = new();
     private Process? _msfsProcess;
+    private IProgress<LaunchProgressEvent>? _progress;
 
     public LaunchOrchestrator(IProcessMonitor monitor, ILogger<LaunchOrchestrator> logger)
     {
@@ -32,6 +33,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     {
         _running.Clear();
         _msfsProcess = null;
+        _progress = progress;
 
         progress.Report(new LaunchProgressEvent
         {
@@ -283,7 +285,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     {
         foreach (var (id, (process, item)) in _running)
         {
-            if (!item.AutoCloseSupported) continue;
+            if (item.AutoCloseSupported) continue;
 
             try
             {
@@ -291,6 +293,14 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
 
                 if (item.CloseMethod == CloseMethod.GracefulClose)
                 {
+                    var timeoutSec = item.GracefulCloseTimeoutMs / 1_000.0;
+                    _progress?.Report(new LaunchProgressEvent
+                    {
+                        EventType = LaunchEventType.ItemClosed,
+                        ItemId = item.Id,
+                        Message = $"Requesting graceful close of '{item.DisplayName}' (timeout: {timeoutSec:0.#}s)..."
+                    });
+
                     process.CloseMainWindow();
                     bool exited = await Task.Run(
                         () => process.WaitForExit(item.GracefulCloseTimeoutMs), ct);
@@ -299,19 +309,44 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                     {
                         _logger.LogWarning(
                             "'{Name}' did not close gracefully; killing", item.DisplayName);
+                        _progress?.Report(new LaunchProgressEvent
+                        {
+                            EventType = LaunchEventType.ItemClosed,
+                            ItemId = item.Id,
+                            Message = $"'{item.DisplayName}' did not respond within {timeoutSec:0.#}s — forcing kill"
+                        });
                         process.Kill();
                     }
                 }
                 else
                 {
+                    _progress?.Report(new LaunchProgressEvent
+                    {
+                        EventType = LaunchEventType.ItemClosed,
+                        ItemId = item.Id,
+                        Message = $"Killing '{item.DisplayName}'..."
+                    });
                     process.Kill();
                 }
 
                 _logger.LogInformation("Closed '{Name}'", item.DisplayName);
+                _progress?.Report(new LaunchProgressEvent
+                {
+                    EventType = LaunchEventType.ItemClosed,
+                    ItemId = item.Id,
+                    Message = $"'{item.DisplayName}' closed"
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Error closing '{Name}'", item.DisplayName);
+                _progress?.Report(new LaunchProgressEvent
+                {
+                    EventType = LaunchEventType.ItemFailed,
+                    ItemId = item.Id,
+                    Message = $"Error closing '{item.DisplayName}': {ex.Message}",
+                    Exception = ex
+                });
             }
         }
 
