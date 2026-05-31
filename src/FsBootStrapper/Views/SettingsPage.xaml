@@ -1,0 +1,84 @@
+﻿<Page
+    x:Class="FsBootStrapper.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vm="clr-namespace:FsBootStrapper.ViewModels"
+    d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Settings">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" MaxWidth="600">
+
+            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,20"/>
+
+            <!-- MSFS Installation -->
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="MSFS 2024 Installation" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Detected installations:" Margin="0,0,0,6"/>
+                    <ComboBox ItemsSource="{Binding DetectedInstallations}"
+                              SelectedItem="{Binding SelectedInstallation}"
+                              HorizontalAlignment="Stretch"
+                              Margin="0,0,0,8">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Type}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding ExecutablePath}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <ui:Button Content="Re-detect"
+                               Icon="{ui:SymbolIcon ArrowSync24}"
+                               Command="{Binding DetectMsfsAsyncCommand}"
+                               Padding="12,6"/>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Behavior -->
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Behavior" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray}"/>
+                        <TextBlock Text="Minimize to system tray instead of closing" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnAddonCrash}"/>
+                        <TextBlock Text="Show notification when an add-on crashes" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnMsfsExit}"/>
+                        <TextBlock Text="Show notification when MSFS 2024 exits" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Save -->
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Content="Save Settings"
+                           Icon="{ui:SymbolIcon Save24}"
+                           Appearance="Primary"
+                           Command="{Binding SaveAsyncCommand}"
+                           Padding="20,8"/>
+                <TextBlock Text="{Binding StatusMessage}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>
+
