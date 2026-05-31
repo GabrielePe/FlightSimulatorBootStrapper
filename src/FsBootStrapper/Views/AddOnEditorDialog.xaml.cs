@@ -1,9 +1,10 @@
 using FsBootStrapper.ViewModels;
 using System.Windows;
+using Wpf.Ui.Controls;
 
 namespace FsBootStrapper.Views;
 
-public partial class AddOnEditorDialog : Window
+public partial class AddOnEditorDialog : FluentWindow
 {
     private readonly AddOnEditorViewModel _vm;
 
