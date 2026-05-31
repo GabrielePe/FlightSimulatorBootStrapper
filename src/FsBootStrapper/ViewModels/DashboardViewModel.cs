@@ -48,6 +48,19 @@ public sealed partial class DashboardViewModel : ViewModelBase
     private async Task LoadProfilesAsync()
     {
         var all = await _profiles.GetAllAsync();
+
+        // Create default profile on first run
+        if (!all.Any())
+        {
+            var def = new AppProfile
+            {
+                Name = "Default",
+                Description = "Default launch profile. Add your add-ons in the Profiles page."
+            };
+            await _profiles.SaveAsync(def);
+            all = await _profiles.GetAllAsync();
+        }
+
         AvailableProfiles = new ObservableCollection<AppProfile>(all);
 
         if (_settings.Current.LastUsedProfileId.HasValue)

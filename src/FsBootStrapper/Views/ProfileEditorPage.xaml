@@ -11,6 +11,10 @@
     mc:Ignorable="d"
     Title="Profiles">
 
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Page.Resources>
+
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
@@ -18,7 +22,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Profile list (left panel) -->
+        <!-- ── Profile list (left panel) ────────────────────────── -->
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -26,7 +30,9 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Profiles" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,8"/>
+            <TextBlock Grid.Row="0" Text="Profiles"
+                       Style="{StaticResource SubtitleTextBlockStyle}"
+                       Margin="0,0,0,8"/>
 
             <ListBox Grid.Row="1"
                      ItemsSource="{Binding Profiles}"
@@ -35,19 +41,26 @@
                      BorderThickness="0"/>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
-                <ui:Button Content="New" Icon="{ui:SymbolIcon Add24}"
-                           Command="{Binding NewProfileCommand}" Padding="12,6"/>
-                <ui:Button Content="Delete" Icon="{ui:SymbolIcon Delete24}"
+                <ui:Button Content="New"
+                           Icon="{ui:SymbolIcon Add24}"
+                           Command="{Binding NewProfileCommand}"
+                           Padding="12,6"
+                           Margin="0,0,8,0"/>
+                <ui:Button Content="Delete"
+                           Icon="{ui:SymbolIcon Delete24}"
                            Appearance="Danger"
-                           Command="{Binding DeleteProfileAsyncCommand}" Padding="12,6"/>
+                           Command="{Binding DeleteProfileAsyncCommand}"
+                           Padding="12,6"/>
             </StackPanel>
         </Grid>
 
-        <!-- Divider -->
-        <Separator Grid.Column="1" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"
-                   LayoutTransform="{StaticResource {x:Static FlowDirection.LeftToRight}}"/>
+        <!-- ── Divider ───────────────────────────────────────────── -->
+        <Rectangle Grid.Column="1"
+                   Width="1"
+                   Fill="{DynamicResource ControlStrokeColorDefaultBrush}"
+                   HorizontalAlignment="Center"/>
 
-        <!-- Profile detail (right panel) -->
+        <!-- ── Profile detail (right panel) ─────────────────────── -->
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -56,52 +69,157 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Profile name/description -->
+            <!-- Profile meta -->
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
                 <TextBlock Text="Profile Name" Margin="0,0,0,4"/>
-                <TextBox Text="{Binding SelectedProfile.Name, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}"
                          Margin="0,0,0,8"/>
                 <TextBlock Text="Description (optional)" Margin="0,0,0,4"/>
-                <TextBox Text="{Binding SelectedProfile.Description, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox Text="{Binding ProfileDescription, UpdateSourceTrigger=PropertyChanged}"
                          Height="56" TextWrapping="Wrap" AcceptsReturn="True"/>
             </StackPanel>
 
-            <!-- Add-on list toolbar -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="Add-ons" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center"/>
-                <ui:Button Content="Add" Icon="{ui:SymbolIcon Add24}"
-                           Command="{Binding AddItemCommand}" Padding="12,6"/>
-            </StackPanel>
+            <!-- Add-on list header -->
+            <Grid Grid.Row="1" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="Add-ons"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           VerticalAlignment="Center"/>
+                <ui:Button Grid.Column="1"
+                           Content="Add add-on…"
+                           Icon="{ui:SymbolIcon Add24}"
+                           Click="OnAddItemClicked"
+                           Padding="12,6"
+                           IsEnabled="{Binding SelectedProfile, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </Grid>
 
-            <!-- Add-on items -->
+            <!-- Add-on DataGrid -->
             <DataGrid Grid.Row="2"
+                      x:Name="ItemsGrid"
                       ItemsSource="{Binding SelectedProfile.Items}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
                       HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal"
                       SelectionMode="Single"
-                      x:Name="ItemsGrid">
+                      VerticalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="160"/>
-                    <DataGridTextColumn Header="Executable" Binding="{Binding ExecutablePath}" Width="*"/>
-                    <DataGridComboBoxColumn Header="Phase"
-                                           SelectedItemBinding="{Binding Phase}"
-                                           Width="110"/>
-                    <DataGridTextColumn Header="Delay (ms)" Binding="{Binding DelayBeforeLaunchMs}" Width="90"/>
-                    <DataGridCheckBoxColumn Header="Auto-close" Binding="{Binding AutoCloseSupported}" Width="85"/>
-                    <DataGridTemplateColumn Header="Actions" Width="110">
+                    <!-- Phase indicator -->
+                    <DataGridTemplateColumn Header="Phase" Width="90" SortMemberPath="Phase">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:Button Icon="{ui:SymbolIcon ArrowUp24}" Padding="4"
+                                <TextBlock Text="{Binding Phase}"
+                                           Padding="6,4"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Display name -->
+                    <DataGridTextColumn Header="Name"
+                                        Binding="{Binding DisplayName}"
+                                        Width="160"/>
+
+                    <!-- Executable (filename only) -->
+                    <DataGridTemplateColumn Header="Executable" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ExecutablePath}"
+                                           Padding="6,4"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding ExecutablePath}"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Delay -->
+                    <DataGridTemplateColumn Header="Delay" Width="70">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Padding="6,4" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="—"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DelayBeforeLaunchMs}" Value="0">
+                                                    <Setter Property="Text" Value="—"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Wait For -->
+                    <DataGridTemplateColumn Header="Wait for" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Padding="6,4" VerticalAlignment="Center"
+                                           Text="{Binding WaitForProcess.ProcessName, FallbackValue='—', TargetNullValue='—'}"
+                                           ToolTip="{Binding WaitForProcess.ProcessName}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Auto-close badge -->
+                    <DataGridTemplateColumn Header="Auto-close" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Padding="6,4" VerticalAlignment="Center"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="✗"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AutoCloseSupported}" Value="True">
+                                                    <Setter Property="Text" Value="✓"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Actions -->
+                    <DataGridTemplateColumn Header="" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <ui:Button Icon="{ui:SymbolIcon Edit24}"
+                                               Padding="5"
+                                               Margin="0,0,2,0"
+                                               ToolTip="Edit"
+                                               Tag="{Binding}"
+                                               Click="OnEditItemClicked"/>
+                                    <ui:Button Icon="{ui:SymbolIcon ArrowUp24}"
+                                               Padding="5"
+                                               Margin="0,0,2,0"
+                                               ToolTip="Move up"
                                                Command="{Binding DataContext.MoveItemUpCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                CommandParameter="{Binding}"/>
-                                    <ui:Button Icon="{ui:SymbolIcon ArrowDown24}" Padding="4"
+                                    <ui:Button Icon="{ui:SymbolIcon ArrowDown24}"
+                                               Padding="5"
+                                               Margin="0,0,2,0"
+                                               ToolTip="Move down"
                                                Command="{Binding DataContext.MoveItemDownCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                CommandParameter="{Binding}"/>
-                                    <ui:Button Icon="{ui:SymbolIcon Delete24}" Padding="4"
+                                    <ui:Button Icon="{ui:SymbolIcon Delete24}"
+                                               Padding="5"
                                                Appearance="Danger"
+                                               ToolTip="Remove"
                                                Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                CommandParameter="{Binding}"/>
                                 </StackPanel>
@@ -112,17 +230,23 @@
             </DataGrid>
 
             <!-- Save bar -->
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,12,0,0">
-                <ui:Button Content="Save Profile"
+            <Grid Grid.Row="3" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ui:Button Grid.Column="0"
+                           Content="Save Profile"
                            Icon="{ui:SymbolIcon Save24}"
                            Appearance="Primary"
                            Command="{Binding SaveProfileAsyncCommand}"
                            Padding="20,8"/>
-                <TextBlock Text="{Binding StatusMessage}"
+                <TextBlock Grid.Column="2"
+                           Text="{Binding StatusMessage}"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-            </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
-

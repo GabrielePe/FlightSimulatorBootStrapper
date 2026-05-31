@@ -1,29 +1,22 @@
 using System.Windows.Controls;
+using Wpf.Ui.Controls;
 
 namespace FsBootStrapper.Services;
 
-/// <summary>Simple page navigation contract driven by the content Frame.</summary>
+/// <summary>Simple page navigation contract.</summary>
 public interface ISimpleNavigationService
 {
     void Navigate(Type pageType);
-    void SetFrame(Frame frame);
+    void SetNavigationView(NavigationView nav);
 }
 
-/// <summary>Implementation that drives a WPF <see cref="Frame"/>.</summary>
+/// <summary>Delegates navigation to the Wpf.Ui <see cref="NavigationView"/>.</summary>
 public sealed class NavigationService : ISimpleNavigationService
 {
-    private Frame? _frame;
-    private readonly IServiceProvider _services;
+    private NavigationView? _navigationView;
 
-    public NavigationService(IServiceProvider services) => _services = services;
+    public void SetNavigationView(NavigationView nav) => _navigationView = nav;
 
-    public void SetFrame(Frame frame) => _frame = frame;
-
-    public void Navigate(Type pageType)
-    {
-        if (_frame is null) return;
-        var page = _services.GetService(pageType);
-        if (page is not null)
-            _frame.Navigate(page);
-    }
+    public void Navigate(Type pageType) =>
+        _navigationView?.Navigate(pageType, null);
 }

@@ -31,60 +31,49 @@
             ShowMaximize="True"
             ShowMinimize="True"/>
 
-        <!-- Layout: nav sidebar + content frame -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Full-area NavigationView (sidebar + content managed by Wpf.Ui) -->
+        <ui:NavigationView
+            x:Name="NavigationRoot"
+            Grid.Row="1"
+            PaneTitle="FSBS"
+            IsPaneOpen="{Binding IsPaneOpen}"
+            OpenPaneLength="200">
 
-            <!-- Navigation sidebar -->
-            <ui:NavigationView
-                x:Name="NavigationRoot"
-                Grid.Column="0"
-                PaneTitle="FSBS"
-                IsPaneOpen="{Binding IsPaneOpen}"
-                OpenPaneLength="200">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem
+                    Content="Dashboard"
+                    TargetPageType="{x:Type views:DashboardPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Home24"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
 
-                <ui:NavigationView.MenuItems>
-                    <ui:NavigationViewItem
-                        Content="Dashboard"
-                        Tag="{x:Type views:DashboardPage}">
-                        <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Home24"/>
-                        </ui:NavigationViewItem.Icon>
-                    </ui:NavigationViewItem>
+                <ui:NavigationViewItem
+                    Content="Profiles"
+                    TargetPageType="{x:Type views:ProfileEditorPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="DocumentBulletList24"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
 
-                    <ui:NavigationViewItem
-                        Content="Profiles"
-                        Tag="{x:Type views:ProfileEditorPage}">
-                        <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="DocumentBulletList24"/>
-                        </ui:NavigationViewItem.Icon>
-                    </ui:NavigationViewItem>
+                <ui:NavigationViewItem
+                    Content="Launch Monitor"
+                    TargetPageType="{x:Type views:LaunchMonitorPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Play24"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
 
-                    <ui:NavigationViewItem
-                        Content="Launch Monitor"
-                        Tag="{x:Type views:LaunchMonitorPage}">
-                        <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Play24"/>
-                        </ui:NavigationViewItem.Icon>
-                    </ui:NavigationViewItem>
-                </ui:NavigationView.MenuItems>
-
-                <ui:NavigationView.FooterMenuItems>
-                    <ui:NavigationViewItem
-                        Content="Settings"
-                        Tag="{x:Type views:SettingsPage}">
-                        <ui:NavigationViewItem.Icon>
-                            <ui:SymbolIcon Symbol="Settings24"/>
-                        </ui:NavigationViewItem.Icon>
-                    </ui:NavigationViewItem>
-                </ui:NavigationView.FooterMenuItems>
-            </ui:NavigationView>
-
-            <!-- Page content frame -->
-            <Frame x:Name="ContentFrame" Grid.Column="1" NavigationUIVisibility="Hidden"/>
-        </Grid>
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem
+                    Content="Settings"
+                    TargetPageType="{x:Type views:SettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Settings24"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
     </Grid>
 </ui:FluentWindow>

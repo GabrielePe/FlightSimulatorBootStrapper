@@ -26,22 +26,15 @@ public partial class MainWindow : FluentWindow
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        // Register the content frame with the navigation service
-        var navService = _services.GetRequiredService<ISimpleNavigationService>() as NavigationService;
-        navService?.SetFrame(ContentFrame);
+        // Give the NavigationView a DI service provider so it can resolve pages
+        NavigationRoot.SetServiceProvider(_services);
 
-        // Wire NavigationView selection to the content Frame
-        NavigationRoot.SelectionChanged += (_, _) =>
-        {
-            if (NavigationRoot.SelectedItem is Wpf.Ui.Controls.NavigationViewItem navItem &&
-                navItem.Tag is Type pageType)
-            {
-                navService?.Navigate(pageType);
-            }
-        };
+        // Give our custom navigation service a reference to the NavigationView
+        var navService = _services.GetRequiredService<ISimpleNavigationService>() as NavigationService;
+        navService?.SetNavigationView(NavigationRoot);
 
         // Navigate to Dashboard on startup
-        navService?.Navigate(typeof(Views.DashboardPage));
+        NavigationRoot.Navigate(typeof(Views.DashboardPage), null);
     }
 
     private void InitializeTrayIcon()
