@@ -65,7 +65,8 @@
                     Click="OnLaunchClicked"
                     IsEnabled="{Binding IsLaunching, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
                     HorizontalAlignment="Left"
-                    Padding="24,10"/>
+                    Padding="24,10"
+                    Margin="0,0,8,0"/>
                 <ui:Button
                     Content="Stop All"
                     Icon="{ui:SymbolIcon Stop24}"

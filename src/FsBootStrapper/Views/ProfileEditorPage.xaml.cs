@@ -188,6 +188,17 @@ public partial class ProfileEditorPage : Page
         {
             ApplyItem(snapshot, item);
             _vm.OnItemEdited();
+
+            // LaunchItem doesn't implement INotifyPropertyChanged, so the DataGrid
+            // won't pick up the changed properties on its own. Force a refresh by
+            // replacing the item in the ObservableCollection.
+            var items = _vm.SelectedProfile!.Items;
+            var idx = items.IndexOf(item);
+            if (idx >= 0)
+            {
+                items.RemoveAt(idx);
+                items.Insert(idx, item);
+            }
         }
     }
 

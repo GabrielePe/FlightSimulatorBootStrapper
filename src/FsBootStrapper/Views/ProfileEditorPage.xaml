@@ -122,7 +122,7 @@
                       VerticalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
                     <!-- Phase indicator -->
-                    <DataGridTemplateColumn Header="Phase" Width="90" SortMemberPath="Phase">
+                    <DataGridTemplateColumn Header="Phase" Width="Auto" SortMemberPath="Phase">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Phase}"
@@ -135,7 +135,7 @@
                     <!-- Display name -->
                     <DataGridTextColumn Header="Name"
                                         Binding="{Binding DisplayName}"
-                                        Width="160"/>
+                                        Width="Auto"/>
 
                     <!-- Executable (filename only) -->
                     <DataGridTemplateColumn Header="Executable" Width="*">
@@ -151,7 +151,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- Delay -->
-                    <DataGridTemplateColumn Header="Delay" Width="70">
+                    <DataGridTemplateColumn Header="Delay" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Padding="6,4" VerticalAlignment="Center">
@@ -171,7 +171,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- Wait For -->
-                    <DataGridTemplateColumn Header="Wait for" Width="120">
+                    <DataGridTemplateColumn Header="Wait for" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Padding="6,4" VerticalAlignment="Center"
@@ -182,19 +182,19 @@
                     </DataGridTemplateColumn>
 
                     <!-- Auto-close badge -->
-                    <DataGridTemplateColumn Header="Auto-close" Width="80">
+                    <DataGridTemplateColumn Header="Force closing" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Padding="6,4" VerticalAlignment="Center"
                                            HorizontalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="✗"/>
-                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <Setter Property="Text" Value="✓"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding AutoCloseSupported}" Value="True">
-                                                    <Setter Property="Text" Value="✓"/>
-                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                    <Setter Property="Text" Value="✗"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -205,7 +205,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- Actions -->
-                    <DataGridTemplateColumn Header="" Width="120">
+                    <DataGridTemplateColumn Header="" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="2">

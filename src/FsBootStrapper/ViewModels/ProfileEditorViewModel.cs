@@ -66,17 +66,9 @@ public sealed partial class ProfileEditorViewModel : ViewModelBase
     partial void OnProfileNameChanged(string value)
     {
         if (_syncing || SelectedProfile is null) return;
+        // AppProfile.Name already raises INotifyPropertyChanged, so the ListBox
+        // updates automatically — no Remove/Insert hack needed.
         SelectedProfile.Name = value;
-        // Force ListBox to refresh by briefly removing and re-inserting
-        _syncing = true;
-        var idx = Profiles.IndexOf(SelectedProfile);
-        if (idx >= 0)
-        {
-            Profiles.RemoveAt(idx);
-            Profiles.Insert(idx, SelectedProfile);
-            SelectedProfile = Profiles[idx];
-        }
-        _syncing = false;
         IsDirty = true;
     }
 
