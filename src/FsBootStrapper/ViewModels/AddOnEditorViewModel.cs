@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FsBootStrapper.Core.Infrastructure;
 using FsBootStrapper.Core.Models;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -125,5 +126,12 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         if (!WaitForProcessEnabled || !string.IsNullOrWhiteSpace(WaitProcessName)) return;
         if (!string.IsNullOrWhiteSpace(value))
             WaitProcessName = Path.GetFileNameWithoutExtension(value);
+    }
+
+    // Auto-detect UAC elevation requirement from the executable manifest
+    partial void OnExecutablePathChanging(string value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            RequiresElevation = ExecutableManifestReader.RequiresElevation(value);
     }
 }
