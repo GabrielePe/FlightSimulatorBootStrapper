@@ -1,9 +1,23 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using FsBootStrapper.Core.Models;
+using FsBootStrapper.Core.Services.Import;
 using FsBootStrapper.ViewModels;
 
 namespace FsBootStrapper.Views;
+
+/// <summary>Returns <c>true</c> when the bound value is not null, <c>false</c> when null.</summary>
+[ValueConversion(typeof(object), typeof(bool))]
+public sealed class NullToBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is not null;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => System.Windows.Data.Binding.DoNothing;
+}
 
 public partial class ProfileEditorPage : Page
 {
@@ -15,6 +29,115 @@ public partial class ProfileEditorPage : Page
         DataContext = vm;
         InitializeComponent();
         Loaded += async (_, _) => await vm.InitializeAsync();
+    }
+
+    // ── Import from exe.xml ───────────────────────────────────────
+    private void OnImportExeXmlClicked(object sender, RoutedEventArgs e)
+    {
+        if (_vm.SelectedProfile is null) return;
+
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Select MSFS exe.xml",
+            Filter = "exe.xml|exe.xml|XML files (*.xml)|*.xml|All files (*.*)|*.*",
+            FileName = "exe.xml"
+        };
+
+        if (dlg.ShowDialog() != true) return;
+
+        IReadOnlyList<FsBootStrapper.Core.Models.LaunchItem> imported;
+        try
+        {
+            imported = ExeXmlImporter.Import(dlg.FileName);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "Import failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return;
+        }
+
+        if (imported.Count == 0)
+        {
+            System.Windows.MessageBox.Show(
+                "No enabled add-ons were found in the selected file.",
+                "Nothing to import",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        // Ask the user whether to append or replace existing items
+        bool hasExisting = _vm.SelectedProfile.Items.Count > 0;
+        bool append = true;
+
+        if (hasExisting)
+        {
+            var answer = System.Windows.MessageBox.Show(
+                $"Found {imported.Count} enabled add-on(s).\n\n" +
+                "Click Yes to append them to the existing list,\n" +
+                "or No to replace the list.",
+                "Import exe.xml",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (answer == MessageBoxResult.Cancel) return;
+            append = answer == MessageBoxResult.Yes;
+        }
+
+        if (!append)
+            _vm.SelectedProfile.Items.Clear();
+
+        int baseOrder = _vm.SelectedProfile.Items.Count;
+        foreach (var item in imported)
+        {
+            item.SortOrder = baseOrder++;
+            _vm.SelectedProfile.Items.Add(item);
+        }
+
+        _vm.OnItemEdited();
+
+        // Ask whether to clean the original exe.xml
+        var cleanAnswer = System.Windows.MessageBox.Show(
+            $"{imported.Count} add-on(s) imported successfully.\n\n" +
+            "Do you want FSBS to clean the original exe.xml?\n\n" +
+            "A timestamped backup will be saved in the same folder before any changes are made.\n" +
+            "The Launch.Addon entries will be removed so MSFS no longer launches them directly.",
+            "Clean exe.xml?",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (cleanAnswer == MessageBoxResult.Yes)
+        {
+            try
+            {
+                var backupPath = ExeXmlImporter.BackupAndClean(dlg.FileName);
+                System.Windows.MessageBox.Show(
+                    $"exe.xml cleaned successfully.\nBackup saved to:\n{backupPath}",
+                    "Done",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Import succeeded, but cleaning failed:\n{ex.Message}",
+                    "Cleanup error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
+        else
+        {
+            System.Windows.MessageBox.Show(
+                $"{imported.Count} add-on(s) imported. The original exe.xml was not modified.",
+                "Import complete",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
     }
 
     // ── Add new add-on ────────────────────────────────────────────
@@ -49,10 +172,11 @@ public partial class ProfileEditorPage : Page
 
         editorVm.LoadFrom(item);
 
-        var dlg = new AddOnEditorDialog(editorVm, Window.GetWindow(this))
+        var dlg = new AddOnEditorDialog(editorVm, owner: null)
         {
             Title = isNew ? "Add Add-on" : "Edit Add-on"
         };
+        dlg.Owner = Window.GetWindow(this);
 
         if (dlg.ShowDialog() == true)
         {

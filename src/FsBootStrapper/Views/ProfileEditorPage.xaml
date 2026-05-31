@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:FsBootStrapper.ViewModels"
+    xmlns:local="clr-namespace:FsBootStrapper.Views"
     xmlns:models="clr-namespace:FsBootStrapper.Core.Models;assembly=FsBootStrapper.Core"
     d:DataContext="{d:DesignInstance vm:ProfileEditorViewModel}"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,6 +14,7 @@
 
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:NullToBoolConverter x:Key="NullToBool"/>
     </Page.Resources>
 
     <Grid Margin="24">
@@ -84,6 +86,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
                            Text="Add-ons"
@@ -94,7 +98,14 @@
                            Icon="{ui:SymbolIcon Add24}"
                            Click="OnAddItemClicked"
                            Padding="12,6"
-                           IsEnabled="{Binding SelectedProfile, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           IsEnabled="{Binding SelectedProfile, Converter={StaticResource NullToBool}}"/>
+                <ui:Button Grid.Column="3"
+                           Content="Import exe.xml…"
+                           Icon="{ui:SymbolIcon ArrowImport24}"
+                           Click="OnImportExeXmlClicked"
+                           Padding="12,6"
+                           ToolTip="Import add-ons from an MSFS exe.xml file"
+                           IsEnabled="{Binding SelectedProfile, Converter={StaticResource NullToBool}}"/>
             </Grid>
 
             <!-- Add-on DataGrid -->
