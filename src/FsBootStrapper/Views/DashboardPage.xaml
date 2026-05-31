@@ -10,8 +10,13 @@
     mc:Ignorable="d"
     Title="Dashboard">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24" MaxWidth="800">
+    <Grid Margin="24" MaxWidth="800">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
 
             <!-- Header -->
             <TextBlock Text="Dashboard" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,20"/>
@@ -75,7 +80,10 @@
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Margin="0,0,0,16"/>
 
-            <!-- Progress list -->
+        </StackPanel>
+
+        <!-- Progress list -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding LaunchProgress}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -97,8 +105,8 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+        </ScrollViewer>
 
-        </StackPanel>
-    </ScrollViewer>
+    </Grid>
 </Page>
 
