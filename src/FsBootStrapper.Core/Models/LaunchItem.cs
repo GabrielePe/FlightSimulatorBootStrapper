@@ -26,6 +26,13 @@ public sealed class LaunchItem
     public int DelayBeforeLaunchMs { get; set; }
 
     /// <summary>
+    /// Milliseconds to wait after this item has launched before the next item
+    /// (or MSFS itself) is started. Summed with the next item's DelayBeforeLaunchMs.
+    /// 0 = no delay.
+    /// </summary>
+    public int DelayAfterLaunchMs { get; set; }
+
+    /// <summary>
     /// If set, the orchestrator will poll until this process is running
     /// before launching this item.
     /// </summary>

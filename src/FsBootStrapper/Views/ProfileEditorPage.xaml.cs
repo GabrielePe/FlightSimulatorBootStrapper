@@ -225,6 +225,7 @@ public partial class ProfileEditorPage : Page
         Phase = src.Phase,
         SortOrder = src.SortOrder,
         DelayBeforeLaunchMs = src.DelayBeforeLaunchMs,
+        DelayAfterLaunchMs = src.DelayAfterLaunchMs,
         AutoCloseSupported = src.AutoCloseSupported,
         CloseMethod = src.CloseMethod,
         GracefulCloseTimeoutMs = src.GracefulCloseTimeoutMs,
@@ -243,6 +244,7 @@ public partial class ProfileEditorPage : Page
         dst.Arguments = src.Arguments;
         dst.Phase = src.Phase;
         dst.DelayBeforeLaunchMs = src.DelayBeforeLaunchMs;
+        dst.DelayAfterLaunchMs = src.DelayAfterLaunchMs;
         dst.AutoCloseSupported = src.AutoCloseSupported;
         dst.CloseMethod = src.CloseMethod;
         dst.GracefulCloseTimeoutMs = src.GracefulCloseTimeoutMs;

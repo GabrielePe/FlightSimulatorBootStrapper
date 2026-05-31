@@ -16,8 +16,10 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
     [ObservableProperty] private LaunchPhase _phase = LaunchPhase.AfterMsfs;
 
     // ── Delay ─────────────────────────────────────────────────────
-    /// <summary>Delay expressed in seconds (UX); stored internally as ms.</summary>
+    /// <summary>Delay before launch expressed in seconds (UX); stored internally as ms.</summary>
     [ObservableProperty] private int _delaySeconds;
+    /// <summary>Delay after launch expressed in seconds (UX); stored internally as ms.</summary>
+    [ObservableProperty] private int _delayAfterSeconds;
 
     // ── Wait-for-process ─────────────────────────────────────────
     [ObservableProperty] private bool _waitForProcessEnabled;
@@ -47,6 +49,7 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         Arguments = item.Arguments ?? string.Empty;
         Phase = item.Phase;
         DelaySeconds = item.DelayBeforeLaunchMs / 1000;
+        DelayAfterSeconds = item.DelayAfterLaunchMs / 1000;
         AutoCloseSupported = item.AutoCloseSupported;
         CloseMethod = item.CloseMethod;
 
@@ -71,6 +74,7 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         item.Arguments = string.IsNullOrWhiteSpace(Arguments) ? null : Arguments.Trim();
         item.Phase = Phase;
         item.DelayBeforeLaunchMs = DelaySeconds * 1000;
+        item.DelayAfterLaunchMs = DelayAfterSeconds * 1000;
         item.AutoCloseSupported = AutoCloseSupported;
         item.CloseMethod = CloseMethod;
         item.WaitForProcess = WaitForProcessEnabled && !string.IsNullOrWhiteSpace(WaitProcessName)

@@ -150,6 +150,13 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                 ItemId = item.Id,
                 Message = $"'{item.DisplayName}' is running (PID {process.Id})"
             });
+
+            // Apply post-launch delay before the next item starts
+            if (item.DelayAfterLaunchMs > 0)
+            {
+                _logger.LogDebug("Waiting {Delay}ms after launching '{Item}'", item.DelayAfterLaunchMs, item.DisplayName);
+                await Task.Delay(item.DelayAfterLaunchMs, ct);
+            }
         }
         catch (Exception ex)
         {
@@ -212,6 +219,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
             if (procs.Length > 0)
             {
                 _msfsProcess = procs[0];
+                _msfsProcess.EnableRaisingEvents = true;
                 // Dispose extra instances if duplicated
                 foreach (var p in procs.Skip(1)) p.Dispose();
 
@@ -255,7 +263,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     {
         foreach (var (id, (process, item)) in _running)
         {
-            if (item.AutoCloseSupported) continue;
+            if (!item.AutoCloseSupported) continue;
 
             try
             {

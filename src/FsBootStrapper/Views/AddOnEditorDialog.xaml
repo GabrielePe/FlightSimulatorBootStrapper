@@ -80,6 +80,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
@@ -89,8 +91,16 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Delay before launch (seconds)" Margin="0,0,0,4"/>
+                    <TextBlock Text="Delay before launch (s)" Margin="0,0,0,4"/>
                     <ui:NumberBox Value="{Binding DelaySeconds}"
+                                  Minimum="0" Maximum="3600"
+                                  SmallChange="1" LargeChange="10"
+                                  ClearButtonEnabled="False"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4">
+                    <TextBlock Text="Delay after launch (s)" Margin="0,0,0,4"/>
+                    <ui:NumberBox Value="{Binding DelayAfterSeconds}"
                                   Minimum="0" Maximum="3600"
                                   SmallChange="1" LargeChange="10"
                                   ClearButtonEnabled="False"/>
