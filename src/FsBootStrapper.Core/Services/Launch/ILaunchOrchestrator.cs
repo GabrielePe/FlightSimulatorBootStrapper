@@ -11,6 +11,7 @@ public interface ILaunchOrchestrator
     Task LaunchAsync(
         AppProfile profile,
         MsfsInstallationInfo msfsInstallation,
+        AppSettings settings,
         IProgress<LaunchProgressEvent> progress,
         CancellationToken ct = default);
 

@@ -17,7 +17,7 @@ public sealed class AppSettings
     /// <summary>
     /// Name of the main MSFS process (without .exe) used for process detection.
     /// </summary>
-    public string MsfsProcessName { get; set; } = "FlightSimulator";
+    public string MsfsProcessName { get; set; } = "FlightSimulator2024";
 
     /// <summary>
     /// Seconds to wait for the MSFS process to appear after launch before giving up.

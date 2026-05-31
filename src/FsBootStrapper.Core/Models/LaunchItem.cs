@@ -49,4 +49,12 @@ public sealed class LaunchItem
 
     /// <summary>Timeout in milliseconds for graceful close before falling back to Kill.</summary>
     public int GracefulCloseTimeoutMs { get; set; } = 5_000;
+
+    /// <summary>
+    /// Whether this add-on requires administrator privileges to run.
+    /// When true and FSBS is already elevated, the process inherits the elevated token (no UAC prompt).
+    /// When false and FSBS is elevated, the process is de-elevated to medium integrity
+    /// so it can communicate with non-elevated processes (e.g. MSFS via Xbox App).
+    /// </summary>
+    public bool RequiresElevation { get; set; }
 }

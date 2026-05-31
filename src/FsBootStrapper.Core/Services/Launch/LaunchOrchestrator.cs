@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Security.Principal;
+using FsBootStrapper.Core.Infrastructure;
 using FsBootStrapper.Core.Models;
 using FsBootStrapper.Core.Services.Monitor;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     public async Task LaunchAsync(
         AppProfile profile,
         MsfsInstallationInfo msfsInstallation,
+        AppSettings settings,
         IProgress<LaunchProgressEvent> progress,
         CancellationToken ct = default)
     {
@@ -47,7 +50,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
             }
 
             // Phase 2: Launch MSFS
-            await LaunchMsfsAsync(msfsInstallation, profile, progress, ct);
+            await LaunchMsfsAsync(msfsInstallation, profile, settings, progress, ct);
 
             // Phase 3: After MSFS
             foreach (var item in profile.GetItemsForPhase(LaunchPhase.AfterMsfs))
@@ -130,15 +133,31 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
 
         try
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = item.ExecutablePath,
-                Arguments = item.Arguments ?? string.Empty,
-                UseShellExecute = false
-            };
+            var workingDir = Path.GetDirectoryName(item.ExecutablePath) ?? string.Empty;
+            var arguments = item.Arguments ?? string.Empty;
 
-            var process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException($"Process.Start returned null for '{item.ExecutablePath}'");
+            // If FSBS is elevated but this item does NOT require elevation,
+            // de-elevate it to Medium IL so it can communicate with MSFS (Xbox/Store).
+            bool isElevated = new WindowsPrincipal(WindowsIdentity.GetCurrent())
+                .IsInRole(WindowsBuiltInRole.Administrator);
+
+            Process process;
+            if (isElevated && !item.RequiresElevation)
+            {
+                process = DeElevatedLauncher.Start(item.ExecutablePath, arguments, workingDir);
+            }
+            else
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = item.ExecutablePath,
+                    Arguments = arguments,
+                    UseShellExecute = true,
+                    WorkingDirectory = workingDir
+                };
+                process = Process.Start(startInfo)
+                    ?? throw new InvalidOperationException($"Process.Start returned null for '{item.ExecutablePath}'");
+            }
 
             _running[item.Id] = (process, item);
             _monitor.Track(item.Id, process, item);
@@ -175,6 +194,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     private async Task LaunchMsfsAsync(
         MsfsInstallationInfo msfs,
         AppProfile profile,
+        AppSettings settings,
         IProgress<LaunchProgressEvent> progress,
         CancellationToken ct)
     {
@@ -209,13 +229,13 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
         Process.Start(startInfo);
 
         // Wait for the MSFS process to appear
-        _logger.LogInformation("Waiting for MSFS process 'FlightSimulator' to appear...");
-        var deadline = DateTime.UtcNow.AddSeconds(120);
+        _logger.LogInformation("Waiting for MSFS process '{Name}' to appear...", settings.MsfsProcessName);
+        var deadline = DateTime.UtcNow.AddSeconds(settings.MsfsProcessWaitTimeoutSeconds);
 
         while (DateTime.UtcNow < deadline)
         {
             ct.ThrowIfCancellationRequested();
-            var procs = Process.GetProcessesByName("FlightSimulator");
+            var procs = Process.GetProcessesByName(settings.MsfsProcessName);
             if (procs.Length > 0)
             {
                 _msfsProcess = procs[0];

@@ -5,7 +5,8 @@
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-        <!-- UAC: always start as Administrator. Child processes inherit the elevated token. -->
+        <!-- UAC: always start as Administrator. Child processes that require elevation inherit the elevated token.
+             Add-ons with RequiresElevation=false are de-elevated at launch via DeElevatedLauncher. -->
         <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
       </requestedPrivileges>
     </security>

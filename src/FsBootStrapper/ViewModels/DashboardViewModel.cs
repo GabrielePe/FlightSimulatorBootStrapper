@@ -97,7 +97,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
                 StatusMessage = evt.Message;
             });
 
-            await _orchestrator.LaunchAsync(SelectedProfile, MsfsInstallation, progress, ct);
+            await _orchestrator.LaunchAsync(SelectedProfile, MsfsInstallation, _settings.Current, progress, ct);
             StatusMessage = "All items launched successfully";
         }
         catch (OperationCanceledException)
