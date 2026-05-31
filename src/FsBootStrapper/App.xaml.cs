@@ -93,14 +93,14 @@ public partial class App : System.Windows.Application
         // ViewModels
         services.AddTransient<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
-        services.AddTransient<ProfileEditorViewModel>();
+        services.AddSingleton<ProfileEditorViewModel>();
         services.AddTransient<LaunchMonitorViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         // Views
         services.AddSingleton<MainWindow>();
         services.AddTransient<DashboardPage>();
-        services.AddTransient<ProfileEditorPage>();
+        services.AddSingleton<ProfileEditorPage>();
         services.AddTransient<LaunchMonitorPage>();
         services.AddTransient<SettingsPage>();
     }

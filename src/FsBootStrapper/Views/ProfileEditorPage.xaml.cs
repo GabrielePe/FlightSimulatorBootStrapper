@@ -31,6 +31,35 @@ public partial class ProfileEditorPage : Page
         Loaded += async (_, _) => await vm.InitializeAsync();
     }
 
+    // ── Profile CRUD handlers ─────────────────────────────────────
+    private void OnNewProfileClicked(object sender, RoutedEventArgs e)
+    {
+        try { _vm.NewProfileCommand.Execute(null); }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
+    private async void OnSaveProfileClicked(object sender, RoutedEventArgs e)
+    {
+        try { await _vm.SaveProfileCommand.ExecuteAsync(null); }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
+    private async void OnDeleteProfileClicked(object sender, RoutedEventArgs e)
+    {
+        if (_vm.SelectedProfile is null) return;
+        var confirm = System.Windows.MessageBox.Show(
+            $"Delete profile '{_vm.SelectedProfile.Name}'?",
+            "Confirm delete",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+        try { await _vm.DeleteProfileCommand.ExecuteAsync(null); }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
+    private static void ShowError(Exception ex) =>
+        System.Windows.MessageBox.Show(ex.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
     // ── Import from exe.xml ───────────────────────────────────────
     private void OnImportExeXmlClicked(object sender, RoutedEventArgs e)
     {

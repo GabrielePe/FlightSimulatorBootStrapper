@@ -45,13 +45,13 @@
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
                 <ui:Button Content="New"
                            Icon="{ui:SymbolIcon Add24}"
-                           Command="{Binding NewProfileCommand}"
+                           Click="OnNewProfileClicked"
                            Padding="12,6"
                            Margin="0,0,8,0"/>
                 <ui:Button Content="Delete"
                            Icon="{ui:SymbolIcon Delete24}"
                            Appearance="Danger"
-                           Command="{Binding DeleteProfileAsyncCommand}"
+                           Click="OnDeleteProfileClicked"
                            Padding="12,6"/>
             </StackPanel>
         </Grid>
@@ -251,7 +251,7 @@
                            Content="Save Profile"
                            Icon="{ui:SymbolIcon Save24}"
                            Appearance="Primary"
-                           Command="{Binding SaveProfileAsyncCommand}"
+                           Click="OnSaveProfileClicked"
                            Padding="20,8"/>
                 <TextBlock Grid.Column="2"
                            Text="{Binding StatusMessage}"
