@@ -57,7 +57,7 @@
                     Content="Launch"
                     Icon="{ui:SymbolIcon Play24}"
                     Appearance="Primary"
-                    Command="{Binding LaunchAsyncCommand}"
+                    Click="OnLaunchClicked"
                     IsEnabled="{Binding IsLaunching, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
                     HorizontalAlignment="Left"
                     Padding="24,10"/>
@@ -65,7 +65,7 @@
                     Content="Stop All"
                     Icon="{ui:SymbolIcon Stop24}"
                     Appearance="Danger"
-                    Command="{Binding StopAllAsyncCommand}"
+                    Click="OnStopAllClicked"
                     Padding="16,10"/>
             </StackPanel>
 
