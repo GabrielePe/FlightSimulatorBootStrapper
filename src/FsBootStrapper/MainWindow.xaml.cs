@@ -34,9 +34,9 @@ public partial class MainWindow : FluentWindow
         NavigationRoot.SelectionChanged += (_, _) =>
         {
             if (NavigationRoot.SelectedItem is Wpf.Ui.Controls.NavigationViewItem navItem &&
-                navItem.TargetPageType is not null)
+                navItem.Tag is Type pageType)
             {
-                navService?.Navigate(navItem.TargetPageType);
+                navService?.Navigate(pageType);
             }
         };
 
