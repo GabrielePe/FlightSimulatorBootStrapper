@@ -32,6 +32,10 @@ DisableProgramGroupPage=yes
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+[CustomMessages]
+italian.DotNetMissing=.NET 9 Desktop Runtime non è installato su questo computer.%n%nFsBootStrapper richiede .NET 9 Desktop Runtime per funzionare.%nVuoi aprire la pagina di download Microsoft adesso?%n%nDopo averlo installato, riavvia questo installer.
+english.DotNetMissing=.NET 9 Desktop Runtime is not installed on this computer.%n%nFsBootStrapper requires .NET 9 Desktop Runtime to run.%nDo you want to open the Microsoft download page now?%n%nAfter installing it, restart this installer.
+
 [Files]
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 
@@ -55,28 +59,29 @@ Type: filesandordirs; Name: "{app}\logs"
 [Code]
 
 { 
-  Cerca il runtime Windows Desktop .NET 9.x nel registro.
-  Microsoft lo registra sotto:
-  HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App
-  come valori DWORD con nome = versione (es. "9.0.5") e valore = 1.
+  Cerca .NET 9 Windows Desktop Runtime controllando la cartella
+  C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App\9.*
+  che è sempre presente indipendentemente dalla struttura del registro.
 }
 function IsDotNet9DesktopRuntimeInstalled(): Boolean;
 var
-  Names: TArrayOfString;
-  I: Integer;
-  RegKey: string;
+  DotnetPath: string;
+  FindRec: TFindRec;
 begin
   Result := False;
-  RegKey := 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App';
-  if not RegGetValueNames(HKLM, RegKey, Names) then
-    Exit;
-  for I := 0 to GetArrayLength(Names) - 1 do
+  DotnetPath := ExpandConstant('{pf}\dotnet\shared\Microsoft.WindowsDesktop.App\');
+  if FindFirst(DotnetPath + '9.*', FindRec) then
   begin
-    // Basta che inizi con "9." per considerarlo compatibile
-    if Copy(Names[I], 1, 2) = '9.' then
-    begin
-      Result := True;
-      Exit;
+    try
+      repeat
+        if FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY <> 0 then
+        begin
+          Result := True;
+          Exit;
+        end;
+      until not FindNext(FindRec);
+    finally
+      FindClose(FindRec);
     end;
   end;
 end;
@@ -94,12 +99,7 @@ begin
 
   DownloadUrl := 'https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe';
 
-  Answer := MsgBox(
-    '.NET 9 Desktop Runtime non è installato su questo computer.' + #13#10 + #13#10 +
-    'FsBootStrapper richiede .NET 9 Desktop Runtime per funzionare.' + #13#10 +
-    'Vuoi aprire la pagina di download Microsoft adesso?' + #13#10 + #13#10 +
-    'Dopo averlo installato, riavvia questo installer.',
-    mbConfirmation, MB_YESNO);
+  Answer := MsgBox(CustomMessage('DotNetMissing'), mbConfirmation, MB_YESNO);
 
   if Answer = IDYES then
     ShellExec('open', DownloadUrl, '', '', SW_SHOWNORMAL, ewNoWait, ResultCode);
