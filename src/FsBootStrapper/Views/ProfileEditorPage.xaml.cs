@@ -8,6 +8,17 @@ using FsBootStrapper.ViewModels;
 
 namespace FsBootStrapper.Views;
 
+/// <summary>Converts a delay in milliseconds to a display string: "—" when 0, otherwise "Xs" (seconds).</summary>
+[ValueConversion(typeof(int), typeof(string))]
+public sealed class DelayMsToStringConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is int ms && ms > 0 ? $"{ms / 1000} s" : "—";
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => System.Windows.Data.Binding.DoNothing;
+}
+
 /// <summary>Returns <c>true</c> when the bound value is not null, <c>false</c> when null.</summary>
 [ValueConversion(typeof(object), typeof(bool))]
 public sealed class NullToBoolConverter : IValueConverter

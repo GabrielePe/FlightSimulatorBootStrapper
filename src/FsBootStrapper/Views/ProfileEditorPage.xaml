@@ -15,6 +15,7 @@
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:NullToBoolConverter x:Key="NullToBool"/>
+        <local:DelayMsToStringConverter x:Key="DelayMsToString"/>
     </Page.Resources>
 
     <Grid Margin="24">
@@ -150,22 +151,22 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Delay -->
-                    <DataGridTemplateColumn Header="Delay" Width="Auto">
+                    <!-- Delay before launch -->
+                    <DataGridTemplateColumn Header="Before (s)" Width="Auto" SortMemberPath="DelayBeforeLaunchMs">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Padding="6,4" VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="—"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DelayBeforeLaunchMs}" Value="0">
-                                                    <Setter Property="Text" Value="—"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                <TextBlock Padding="6,4" VerticalAlignment="Center"
+                                           Text="{Binding DelayBeforeLaunchMs, Converter={StaticResource DelayMsToString}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Delay after launch -->
+                    <DataGridTemplateColumn Header="After (s)" Width="Auto" SortMemberPath="DelayAfterLaunchMs">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Padding="6,4" VerticalAlignment="Center"
+                                           Text="{Binding DelayAfterLaunchMs, Converter={StaticResource DelayMsToString}}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

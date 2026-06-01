@@ -21,7 +21,7 @@ public partial class AddOnEditorDialog : FluentWindow
     {
         // Force any focused NumberBox (or other LostFocus-triggered control) to
         // commit its pending value to the ViewModel before we read it.
-        BtnOk.Focus();
+        Focus();
 
         if (!_vm.IsValid)
         {
