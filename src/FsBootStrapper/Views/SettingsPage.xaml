@@ -66,6 +66,17 @@
                 </StackPanel>
             </ui:Card>
 
+            <!-- About -->
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="About" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="Version" Width="120" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding AppVersion}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
             <!-- Save -->
             <StackPanel Orientation="Horizontal">
                 <ui:Button Content="Save Settings"

@@ -5,6 +5,7 @@ using FsBootStrapper.Core.Services.Detection;
 using FsBootStrapper.Core.Services.Settings;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace FsBootStrapper.ViewModels;
 
@@ -13,6 +14,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private readonly IAppSettingsService _settingsService;
     private readonly IMsfsDetectionService _detection;
     private readonly ILogger<SettingsViewModel> _logger;
+
+    public string AppVersion { get; } =
+        Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0";
 
     [ObservableProperty] private ObservableCollection<MsfsInstallationInfo> _detectedInstallations = [];
     [ObservableProperty] private MsfsInstallationInfo? _selectedInstallation;
