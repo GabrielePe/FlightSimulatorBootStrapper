@@ -55,15 +55,30 @@ public partial class ProfileEditorPage : Page
         catch (Exception ex) { ShowError(ex); }
     }
 
+    private void OnCreateNewFromClicked(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is not AppProfile profile) return;
+
+        var dlg = new NameInputDialog($"{profile.Name}_Copy", Window.GetWindow(this)!);
+        if (dlg.ShowDialog() != true || dlg.ProfileName is null) return;
+
+        _vm.SelectedProfile = profile;
+        try { _vm.DuplicateProfileCommand.Execute(dlg.ProfileName); }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
     private async void OnDeleteProfileClicked(object sender, RoutedEventArgs e)
     {
-        if (_vm.SelectedProfile is null) return;
+        if ((sender as FrameworkElement)?.Tag is not AppProfile profile) return;
+
         var confirm = System.Windows.MessageBox.Show(
-            $"Delete profile '{_vm.SelectedProfile.Name}'?",
+            $"Delete profile '{profile.Name}'?",
             "Confirm delete",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
         if (confirm != MessageBoxResult.Yes) return;
+
+        _vm.SelectedProfile = profile;
         try { await _vm.DeleteProfileCommand.ExecuteAsync(null); }
         catch (Exception ex) { ShowError(ex); }
     }

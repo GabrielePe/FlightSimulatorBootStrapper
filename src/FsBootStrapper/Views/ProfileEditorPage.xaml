@@ -40,19 +40,43 @@
             <ListBox Grid.Row="1"
                      ItemsSource="{Binding Profiles}"
                      SelectedItem="{Binding SelectedProfile}"
-                     DisplayMemberPath="Name"
-                     BorderThickness="0"/>
+                     BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <ui:Button Grid.Column="1"
+                                       Icon="{ui:SymbolIcon Copy24}"
+                                       Appearance="Caution"
+                                       Padding="5"
+                                       Margin="6,0,2,0"
+                                       ToolTip="Create new profile from this"
+                                       Tag="{Binding}"
+                                       Click="OnCreateNewFromClicked"/>
+                            <ui:Button Grid.Column="2"
+                                       Icon="{ui:SymbolIcon Delete24}"
+                                       Padding="5"
+                                       Appearance="Danger"
+                                       ToolTip="Delete profile"
+                                       Tag="{Binding}"
+                                       Click="OnDeleteProfileClicked"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
                 <ui:Button Content="New"
                            Icon="{ui:SymbolIcon Add24}"
                            Click="OnNewProfileClicked"
-                           Padding="12,6"
-                           Margin="0,0,8,0"/>
-                <ui:Button Content="Delete"
-                           Icon="{ui:SymbolIcon Delete24}"
-                           Appearance="Danger"
-                           Click="OnDeleteProfileClicked"
                            Padding="12,6"/>
             </StackPanel>
         </Grid>

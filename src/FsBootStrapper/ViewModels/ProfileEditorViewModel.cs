@@ -112,6 +112,41 @@ public sealed partial class ProfileEditorViewModel : ViewModelBase
         StatusMessage = $"Profile '{name}' deleted";
     }
 
+    [RelayCommand]
+    private void DuplicateProfile(string newName)
+    {
+        if (SelectedProfile is null) return;
+
+        var copy = new AppProfile
+        {
+            Name = newName,
+            Description = SelectedProfile.Description
+        };
+
+        foreach (var item in SelectedProfile.Items)
+        {
+            copy.Items.Add(new FsBootStrapper.Core.Models.LaunchItem
+            {
+                DisplayName        = item.DisplayName,
+                ExecutablePath     = item.ExecutablePath,
+                Arguments          = item.Arguments,
+                Phase              = item.Phase,
+                SortOrder          = item.SortOrder,
+                DelayBeforeLaunchMs = item.DelayBeforeLaunchMs,
+                DelayAfterLaunchMs  = item.DelayAfterLaunchMs,
+                WaitForProcess     = item.WaitForProcess,
+                AutoCloseSupported = item.AutoCloseSupported,
+                CloseMethod        = item.CloseMethod,
+                GracefulCloseTimeoutMs = item.GracefulCloseTimeoutMs,
+                RequiresElevation  = item.RequiresElevation
+            });
+        }
+
+        Profiles.Add(copy);
+        SelectedProfile = copy;
+        IsDirty = true;
+    }
+
     // ── Item management (called from code-behind after dialog) ────
 
     /// <summary>
