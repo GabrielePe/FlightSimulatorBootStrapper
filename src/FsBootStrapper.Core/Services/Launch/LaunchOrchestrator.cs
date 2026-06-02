@@ -62,10 +62,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
             }
 
             // Phase 4: Monitor MSFS for exit → trigger auto-close
-            if (_msfsProcess is not null)
-            {
-                _ = MonitorMsfsExitAsync(_msfsProcess, profile, progress, ct);
-            }
+            _ = MonitorMsfsExitAsync(settings.MsfsProcessName, _msfsProcess, progress, ct);
 
             progress.Report(new LaunchProgressEvent
             {
