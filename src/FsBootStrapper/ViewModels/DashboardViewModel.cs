@@ -5,8 +5,10 @@ using FsBootStrapper.Core.Services.Detection;
 using FsBootStrapper.Core.Services.Launch;
 using FsBootStrapper.Core.Services.Profiles;
 using FsBootStrapper.Core.Services.Settings;
+using FsBootStrapper.Services;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace FsBootStrapper.ViewModels;
 
@@ -16,6 +18,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
     private readonly IAppSettingsService _settings;
     private readonly IMsfsDetectionService _detection;
     private readonly ILaunchOrchestrator _orchestrator;
+    private readonly IAppShutdownService _shutdownService;
     private readonly ILogger<DashboardViewModel> _logger;
 
     [ObservableProperty] private ObservableCollection<AppProfile> _availableProfiles = [];
@@ -30,12 +33,14 @@ public sealed partial class DashboardViewModel : ViewModelBase
         IAppSettingsService settings,
         IMsfsDetectionService detection,
         ILaunchOrchestrator orchestrator,
+        IAppShutdownService shutdownService,
         ILogger<DashboardViewModel> logger)
     {
         _profiles = profiles;
         _settings = settings;
         _detection = detection;
         _orchestrator = orchestrator;
+        _shutdownService = shutdownService;
         _logger = logger;
     }
 
@@ -95,6 +100,12 @@ public sealed partial class DashboardViewModel : ViewModelBase
             {
                 LaunchProgress.Add(new LaunchProgressItemViewModel(evt));
                 StatusMessage = evt.Message;
+
+                if (evt.EventType == Core.Models.LaunchEventType.AutoCloseRequested)
+                {
+                    _shutdownService.RequestShutdown();
+                    System.Windows.Application.Current.Shutdown();
+                }
             });
 
             await _orchestrator.LaunchAsync(SelectedProfile, MsfsInstallation, _settings.Current, progress, ct);
@@ -120,8 +131,8 @@ public sealed partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private async Task StopAllAsync()
     {
-        await _orchestrator.StopAllAsync();
-        StatusMessage = "All processes stopped";
+        var stoppedCleanly = await _orchestrator.StopAllAsync();
+        StatusMessage = stoppedCleanly ? "All processes stopped" : "Processes stopped with warnings";
     }
 
     partial void OnIsLaunchingChanged(bool value) => LaunchCommand.NotifyCanExecuteChanged();

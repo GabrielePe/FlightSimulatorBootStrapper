@@ -12,6 +12,7 @@ public enum LaunchEventType
     MsfsLaunching,
     MsfsRunning,
     MsfsExited,
+    AutoCloseRequested,
     ItemCrashed,
     ItemClosed,
     SequenceCompleted,
