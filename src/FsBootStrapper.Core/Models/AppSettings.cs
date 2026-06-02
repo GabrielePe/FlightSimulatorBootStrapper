@@ -37,4 +37,7 @@ public sealed class AppSettings
 
     /// <summary>Whether to show a balloon notification when MSFS exits.</summary>
     public bool NotifyOnMsfsExit { get; set; } = true;
+
+    /// <summary>Whether FSBS should close itself after MSFS and add-ons shut down cleanly.</summary>
+    public bool AutoCloseFsbsAfterMsfsExit { get; set; }
 }

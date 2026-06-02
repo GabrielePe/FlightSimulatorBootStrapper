@@ -63,6 +63,11 @@
                         <ui:ToggleSwitch IsChecked="{Binding NotifyOnMsfsExit}"/>
                         <TextBlock Text="Show notification when MSFS 2024 exits" VerticalAlignment="Center"/>
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch IsChecked="{Binding AutoCloseFsbsAfterMsfsExit}"/>
+                        <TextBlock Text="Close FsBootStrapper after MSFS and add-ons shut down cleanly" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
                 </StackPanel>
             </ui:Card>
 

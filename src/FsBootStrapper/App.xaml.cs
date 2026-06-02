@@ -88,6 +88,7 @@ public partial class App : System.Windows.Application
 
         // App services
         services.AddSingleton<INotificationService, TrayNotificationService>();
+        services.AddSingleton<IAppShutdownService, AppShutdownService>();
         services.AddSingleton<ISimpleNavigationService, NavigationService>();
 
         // ViewModels

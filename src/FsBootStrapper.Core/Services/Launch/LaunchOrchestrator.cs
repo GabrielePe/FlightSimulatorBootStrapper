@@ -62,7 +62,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
             }
 
             // Phase 4: Monitor MSFS for exit → trigger auto-close
-            _ = MonitorMsfsExitAsync(settings.MsfsProcessName, _msfsProcess, progress, ct);
+            _ = MonitorMsfsExitAsync(settings, _msfsProcess, progress, ct);
 
             progress.Report(new LaunchProgressEvent
             {
@@ -257,7 +257,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     }
 
     private async Task MonitorMsfsExitAsync(
-        string msfsProcessName,
+        AppSettings settings,
         Process? msfsProcess,
         IProgress<LaunchProgressEvent> progress,
         CancellationToken ct)
@@ -266,11 +266,11 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
         {
             if (msfsProcess is null)
             {
-                _logger.LogInformation("Waiting for MSFS process '{Name}' to become available for exit monitoring...", msfsProcessName);
+                _logger.LogInformation("Waiting for MSFS process '{Name}' to become available for exit monitoring...", settings.MsfsProcessName);
 
                 while (!ct.IsCancellationRequested)
                 {
-                    var procs = Process.GetProcessesByName(msfsProcessName);
+                    var procs = Process.GetProcessesByName(settings.MsfsProcessName);
                     if (procs.Length > 0)
                     {
                         msfsProcess = procs[0];
@@ -304,11 +304,25 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
             Message = "MSFS 2024 has exited. Closing add-ons..."
         });
 
-        await StopAllAsync(ct);
+        var allClosedCleanly = await StopAllAsync(ct);
+        if (allClosedCleanly && settings.AutoCloseFsbsAfterMsfsExit)
+        {
+            progress.Report(new LaunchProgressEvent
+            {
+                EventType = LaunchEventType.AutoCloseRequested,
+                Message = "All add-ons closed cleanly. Closing FsBootStrapper..."
+            });
+        }
+        else if (settings.AutoCloseFsbsAfterMsfsExit)
+        {
+            _logger.LogWarning("Auto-close skipped because one or more add-ons did not close cleanly");
+        }
     }
 
-    public async Task StopAllAsync(CancellationToken ct = default)
+    public async Task<bool> StopAllAsync(CancellationToken ct = default)
     {
+        var allClosedCleanly = true;
+
         foreach (var (id, (process, item)) in _running)
         {
             if (item.AutoCloseSupported) continue;
@@ -365,6 +379,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
             }
             catch (Exception ex)
             {
+                allClosedCleanly = false;
                 _logger.LogWarning(ex, "Error closing '{Name}'", item.DisplayName);
                 _progress?.Report(new LaunchProgressEvent
                 {
@@ -378,6 +393,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
 
         _running.Clear();
         _monitor.UntrackAll();
+        return allClosedCleanly;
     }
 
     private static async Task<bool> WaitForProcessAsync(WaitCondition condition, CancellationToken ct)

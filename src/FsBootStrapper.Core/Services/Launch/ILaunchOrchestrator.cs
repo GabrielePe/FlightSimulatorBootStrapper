@@ -18,5 +18,5 @@ public interface ILaunchOrchestrator
     /// <summary>
     /// Requests a graceful stop of all tracked processes.
     /// </summary>
-    Task StopAllAsync(CancellationToken ct = default);
+    Task<bool> StopAllAsync(CancellationToken ct = default);
 }

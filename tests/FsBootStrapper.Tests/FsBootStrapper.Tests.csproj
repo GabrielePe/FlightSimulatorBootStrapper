@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FsBootStrapper.Core\FsBootStrapper.Core.csproj" />
+    <ProjectReference Include="..\..\src\FsBootStrapper\FsBootStrapper.csproj" />
   </ItemGroup>
 
 </Project>

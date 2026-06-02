@@ -5,8 +5,10 @@ using FsBootStrapper.Core.Services.Launch;
 using FsBootStrapper.Core.Services.Monitor;
 using FsBootStrapper.Core.Services.Notifications;
 using FsBootStrapper.Core.Services.Settings;
+using FsBootStrapper.Services;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace FsBootStrapper.ViewModels;
 
@@ -16,6 +18,7 @@ public sealed partial class LaunchMonitorViewModel : ViewModelBase
     private readonly IProcessMonitor _monitor;
     private readonly INotificationService _notifications;
     private readonly IAppSettingsService _settings;
+    private readonly IAppShutdownService _shutdownService;
     private readonly ILogger<LaunchMonitorViewModel> _logger;
 
     [ObservableProperty] private ObservableCollection<MonitorItemViewModel> _items = [];
@@ -27,12 +30,14 @@ public sealed partial class LaunchMonitorViewModel : ViewModelBase
         IProcessMonitor monitor,
         INotificationService notifications,
         IAppSettingsService settings,
+        IAppShutdownService shutdownService,
         ILogger<LaunchMonitorViewModel> logger)
     {
         _orchestrator = orchestrator;
         _monitor = monitor;
         _notifications = notifications;
         _settings = settings;
+        _shutdownService = shutdownService;
         _logger = logger;
 
         _monitor.ProcessStateChanged += OnProcessStateChanged;
@@ -69,6 +74,10 @@ public sealed partial class LaunchMonitorViewModel : ViewModelBase
                 if (_settings.Current.NotifyOnMsfsExit)
                     _notifications.Show("MSFS Exited", "MSFS 2024 has shut down. Closing add-ons...", NotificationSeverity.Info);
                 break;
+            case LaunchEventType.AutoCloseRequested:
+                _shutdownService.RequestShutdown();
+                System.Windows.Application.Current.Shutdown();
+                break;
         }
     }
 
@@ -100,9 +109,12 @@ public sealed partial class LaunchMonitorViewModel : ViewModelBase
     [RelayCommand]
     private async Task StopAllAsync()
     {
-        await _orchestrator.StopAllAsync();
+        var stoppedCleanly = await _orchestrator.StopAllAsync();
         foreach (var item in Items)
             item.Status = MonitorItemStatus.Stopped;
+
+        if (!stoppedCleanly)
+            _logger.LogWarning("One or more add-ons stopped with warnings");
     }
 }
 

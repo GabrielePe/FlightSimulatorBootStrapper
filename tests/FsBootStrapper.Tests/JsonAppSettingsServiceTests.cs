@@ -26,7 +26,8 @@ public sealed class JsonAppSettingsServiceTests
         await sut.LoadAsync();
 
         sut.Current.Should().NotBeNull();
-        sut.Current.MsfsProcessName.Should().Be("FlightSimulator");
+        sut.Current.MsfsProcessName.Should().Be("FlightSimulator2024");
+        sut.Current.AutoCloseFsbsAfterMsfsExit.Should().BeFalse();
     }
 
     [Fact]
@@ -58,9 +59,11 @@ public sealed class JsonAppSettingsServiceTests
 
         var sut = CreateSut();
         sut.Current.MsfsProcessName = "AnotherProcess";
+        sut.Current.AutoCloseFsbsAfterMsfsExit = true;
         await sut.SaveAsync();
 
         writtenContent.Should().Contain("AnotherProcess");
+        writtenContent.Should().Contain("autoCloseFsbsAfterMsfsExit");
     }
 
     [Fact]
@@ -73,6 +76,6 @@ public sealed class JsonAppSettingsServiceTests
         await sut.LoadAsync();
 
         sut.Current.Should().NotBeNull();
-        sut.Current.MsfsProcessName.Should().Be("FlightSimulator");
+        sut.Current.MsfsProcessName.Should().Be("FlightSimulator2024");
     }
 }

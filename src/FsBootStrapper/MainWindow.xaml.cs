@@ -9,13 +9,14 @@ namespace FsBootStrapper;
 public partial class MainWindow : FluentWindow
 {
     private readonly IServiceProvider _services;
+    private readonly IAppShutdownService _shutdownService;
     private readonly MainViewModel _vm;
     private System.Windows.Forms.NotifyIcon? _notifyIcon;
-    private bool _forceClose;
 
     public MainWindow(IServiceProvider services, MainViewModel vm)
     {
         _services = services;
+        _shutdownService = services.GetRequiredService<IAppShutdownService>();
         _vm = vm;
         DataContext = vm;
         InitializeComponent();
@@ -71,7 +72,7 @@ public partial class MainWindow : FluentWindow
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        if (!_forceClose)
+        if (!_shutdownService.ShutdownRequested)
         {
             var settings = _services.GetRequiredService<Core.Services.Settings.IAppSettingsService>();
             if (settings.Current.MinimizeToTray)
@@ -109,7 +110,7 @@ public partial class MainWindow : FluentWindow
 
     private void ExitApp()
     {
-        _forceClose = true;
+        _shutdownService.RequestShutdown();
         System.Windows.Application.Current.Shutdown();
     }
 }
