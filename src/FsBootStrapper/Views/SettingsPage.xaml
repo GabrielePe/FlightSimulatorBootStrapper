@@ -22,7 +22,7 @@
 
                     <TextBlock Text="Detected installations:" Margin="0,0,0,6"/>
                     <ComboBox ItemsSource="{Binding DetectedInstallations}"
-                              SelectedItem="{Binding SelectedInstallation}"
+                              SelectedItem="{Binding SelectedInstallation, Mode=TwoWay}"
                               HorizontalAlignment="Stretch"
                               Margin="0,0,0,8">
                         <ComboBox.ItemTemplate>
@@ -50,17 +50,17 @@
                     <TextBlock Text="Behavior" Style="{StaticResource SubtitleTextBlockStyle}"/>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray}"/>
+                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"/>
                         <TextBlock Text="Minimize to system tray instead of closing" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnAddonCrash}"/>
+                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnAddonCrash, Mode=TwoWay}"/>
                         <TextBlock Text="Show notification when an add-on crashes" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnMsfsExit}"/>
+                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnMsfsExit, Mode=TwoWay}"/>
                         <TextBlock Text="Show notification when MSFS 2024 exits" VerticalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
@@ -82,7 +82,7 @@
                 <ui:Button Content="Save Settings"
                            Icon="{ui:SymbolIcon Save24}"
                            Appearance="Primary"
-                           Command="{Binding SaveAsyncCommand}"
+                           Click="OnSaveSettingsClicked"
                            Padding="20,8"/>
                 <TextBlock Text="{Binding StatusMessage}"
                            VerticalAlignment="Center"
