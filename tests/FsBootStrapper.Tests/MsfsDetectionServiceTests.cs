@@ -1,6 +1,7 @@
 using FsBootStrapper.Core.Abstractions;
 using FsBootStrapper.Core.Models;
 using FsBootStrapper.Core.Services.Detection;
+using FsBootStrapper.Core.Services.Settings;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using FluentAssertions;
@@ -11,11 +12,17 @@ public sealed class MsfsDetectionServiceTests
 {
     private readonly IRegistryReader _registry = Substitute.For<IRegistryReader>();
     private readonly IFileSystem _fs = Substitute.For<IFileSystem>();
+    private readonly IAppSettingsService _settings = Substitute.For<IAppSettingsService>();
     private readonly ILogger<MsfsDetectionService> _logger =
         Substitute.For<ILogger<MsfsDetectionService>>();
 
+    public MsfsDetectionServiceTests()
+    {
+        _settings.Current.Returns(new AppSettings());
+    }
+
     private MsfsDetectionService CreateSut() =>
-        new(_registry, _fs, _logger);
+        new(_registry, _fs, _settings, _logger);
 
     [Fact]
     public async Task DetectInstallationsAsync_WhenSteamNotInstalled_DoesNotReturnSteam()

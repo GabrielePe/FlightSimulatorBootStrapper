@@ -165,7 +165,7 @@ public sealed partial class ProfileEditorViewModel : ViewModelBase
     /// </summary>
     public List<string> GetKnownProcessNames()
     {
-        var names = new List<string> { "FlightSimulator" };
+        var names = new List<string> { "FlightSimulator2024" };
         if (SelectedProfile is not null)
         {
             names.AddRange(SelectedProfile.Items

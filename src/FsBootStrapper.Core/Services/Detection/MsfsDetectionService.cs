@@ -1,5 +1,6 @@
 using FsBootStrapper.Core.Abstractions;
 using FsBootStrapper.Core.Models;
+using FsBootStrapper.Core.Services.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace FsBootStrapper.Core.Services.Detection;
@@ -18,15 +19,18 @@ public sealed class MsfsDetectionService : IMsfsDetectionService
 
     private readonly IRegistryReader _registry;
     private readonly IFileSystem _fs;
+    private readonly IAppSettingsService _settings;
     private readonly ILogger<MsfsDetectionService> _logger;
 
     public MsfsDetectionService(
         IRegistryReader registry,
         IFileSystem fs,
+        IAppSettingsService settings,
         ILogger<MsfsDetectionService> logger)
     {
         _registry = registry;
         _fs = fs;
+        _settings = settings;
         _logger = logger;
     }
 
@@ -95,7 +99,10 @@ public sealed class MsfsDetectionService : IMsfsDetectionService
             }
 
             var installPath = package.InstalledLocation?.Path ?? string.Empty;
-            var exePath = Path.Combine(installPath, "FlightSimulator.exe");
+            var processName = string.IsNullOrWhiteSpace(_settings.Current.MsfsProcessName)
+                ? "FlightSimulator2024"
+                : _settings.Current.MsfsProcessName.Trim();
+            var exePath = Path.Combine(installPath, processName + ".exe");
 
             _logger.LogInformation("Xbox MSFS 2024 detected. Package path: {Path}", installPath);
             return new MsfsInstallationInfo

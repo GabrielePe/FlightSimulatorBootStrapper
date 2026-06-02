@@ -260,13 +260,42 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     }
 
     private async Task MonitorMsfsExitAsync(
-        Process msfsProcess,
-        AppProfile profile,
+        string msfsProcessName,
+        Process? msfsProcess,
         IProgress<LaunchProgressEvent> progress,
         CancellationToken ct)
     {
         try
         {
+            if (msfsProcess is null)
+            {
+                _logger.LogInformation("Waiting for MSFS process '{Name}' to become available for exit monitoring...", msfsProcessName);
+
+                while (!ct.IsCancellationRequested)
+                {
+                    var procs = Process.GetProcessesByName(msfsProcessName);
+                    if (procs.Length > 0)
+                    {
+                        msfsProcess = procs[0];
+                        msfsProcess.EnableRaisingEvents = true;
+
+                        foreach (var p in procs.Skip(1))
+                        {
+                            p.Dispose();
+                        }
+
+                        break;
+                    }
+
+                    await Task.Delay(3_000, ct);
+                }
+            }
+
+            if (msfsProcess is null)
+            {
+                return;
+            }
+
             await msfsProcess.WaitForExitAsync(ct);
         }
         catch (OperationCanceledException) { return; }
