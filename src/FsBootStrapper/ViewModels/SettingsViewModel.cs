@@ -24,6 +24,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private bool _notifyOnAddonCrash;
     [ObservableProperty] private bool _notifyOnMsfsExit;
     [ObservableProperty] private bool _autoCloseFsbsAfterMsfsExit;
+    [ObservableProperty] private bool _closeToTrayAfterLaunch;
     [ObservableProperty] private string? _customMsfsPath;
     [ObservableProperty] private string _statusMessage = string.Empty;
 
@@ -44,6 +45,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         NotifyOnAddonCrash = settings.NotifyOnAddonCrash;
         NotifyOnMsfsExit = settings.NotifyOnMsfsExit;
         AutoCloseFsbsAfterMsfsExit = settings.AutoCloseFsbsAfterMsfsExit;
+        CloseToTrayAfterLaunch = settings.CloseToTrayAfterLaunch;
         CustomMsfsPath = settings.MsfsCustomExecutablePath;
 
         var installations = await _detection.DetectInstallationsAsync();
@@ -61,6 +63,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         s.NotifyOnAddonCrash = NotifyOnAddonCrash;
         s.NotifyOnMsfsExit = NotifyOnMsfsExit;
         s.AutoCloseFsbsAfterMsfsExit = AutoCloseFsbsAfterMsfsExit;
+        s.CloseToTrayAfterLaunch = CloseToTrayAfterLaunch;
         s.MsfsCustomExecutablePath = CustomMsfsPath;
 
         if (SelectedInstallation is not null)

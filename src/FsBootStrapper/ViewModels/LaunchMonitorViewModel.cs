@@ -75,8 +75,7 @@ public sealed partial class LaunchMonitorViewModel : ViewModelBase
                     _notifications.Show("MSFS Exited", "MSFS 2024 has shut down. Closing add-ons...", NotificationSeverity.Info);
                 break;
             case LaunchEventType.AutoCloseRequested:
-                _shutdownService.RequestShutdown();
-                System.Windows.Application.Current.Shutdown();
+                _ = HandleAutoCloseAsync();
                 break;
         }
     }
@@ -115,6 +114,14 @@ public sealed partial class LaunchMonitorViewModel : ViewModelBase
 
         if (!stoppedCleanly)
             _logger.LogWarning("One or more add-ons stopped with warnings");
+    }
+
+    private async Task HandleAutoCloseAsync()
+    {
+        _notifications.Show("FsBootStrapper", "All add-ons closed. FSBS shutting down now...", NotificationSeverity.Info);
+        await Task.Delay(3000);
+        _shutdownService.RequestShutdown();
+        System.Windows.Application.Current.Dispatcher.Invoke(System.Windows.Application.Current.Shutdown);
     }
 }
 

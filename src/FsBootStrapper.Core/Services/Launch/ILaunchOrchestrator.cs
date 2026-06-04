@@ -4,6 +4,9 @@ namespace FsBootStrapper.Core.Services.Launch;
 
 public interface ILaunchOrchestrator
 {
+    bool IsSessionActive { get; }
+    bool IsLaunching { get; }
+
     /// <summary>
     /// Executes the full launch sequence for the given profile, reporting progress
     /// through <paramref name="progress"/>.

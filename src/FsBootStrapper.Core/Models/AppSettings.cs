@@ -40,4 +40,6 @@ public sealed class AppSettings
 
     /// <summary>Whether FSBS should close itself after MSFS and add-ons shut down cleanly.</summary>
     public bool AutoCloseFsbsAfterMsfsExit { get; set; }
+
+    public bool CloseToTrayAfterLaunch { get; set; }
 }

@@ -68,6 +68,11 @@
                         <ui:ToggleSwitch IsChecked="{Binding AutoCloseFsbsAfterMsfsExit}"/>
                         <TextBlock Text="Close FsBootStrapper after MSFS and add-ons shut down cleanly" VerticalAlignment="Center" TextWrapping="Wrap"/>
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch IsChecked="{Binding CloseToTrayAfterLaunch, Mode=TwoWay}"/>
+                        <TextBlock Text="Minimize to tray after successful launch" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </StackPanel>
             </ui:Card>
 

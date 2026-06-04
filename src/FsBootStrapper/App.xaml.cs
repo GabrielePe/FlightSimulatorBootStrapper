@@ -90,17 +90,18 @@ public partial class App : System.Windows.Application
         services.AddSingleton<INotificationService, TrayNotificationService>();
         services.AddSingleton<IAppShutdownService, AppShutdownService>();
         services.AddSingleton<ISimpleNavigationService, NavigationService>();
+        services.AddSingleton<IWindowStateService, WindowStateService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();
-        services.AddTransient<DashboardViewModel>();
+        services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<ProfileEditorViewModel>();
         services.AddTransient<LaunchMonitorViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         // Views
         services.AddSingleton<MainWindow>();
-        services.AddTransient<DashboardPage>();
+        services.AddSingleton<DashboardPage>();
         services.AddSingleton<ProfileEditorPage>();
         services.AddTransient<LaunchMonitorPage>();
         services.AddTransient<SettingsPage>();

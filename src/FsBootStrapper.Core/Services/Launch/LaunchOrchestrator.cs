@@ -17,6 +17,10 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
     private readonly ConcurrentDictionary<Guid, (Process Process, LaunchItem Item)> _running = new();
     private Process? _msfsProcess;
     private IProgress<LaunchProgressEvent>? _progress;
+    private volatile bool _isLaunching;
+
+    public bool IsSessionActive => !_running.IsEmpty;
+    public bool IsLaunching => _isLaunching;
 
     public LaunchOrchestrator(IProcessMonitor monitor, ILogger<LaunchOrchestrator> logger)
     {
@@ -31,6 +35,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
         IProgress<LaunchProgressEvent> progress,
         CancellationToken ct = default)
     {
+        _isLaunching = true;
         _running.Clear();
         _msfsProcess = null;
         _progress = progress;
@@ -90,6 +95,10 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                 Exception = ex
             });
             throw;
+        }
+        finally
+        {
+            _isLaunching = false;
         }
     }
 

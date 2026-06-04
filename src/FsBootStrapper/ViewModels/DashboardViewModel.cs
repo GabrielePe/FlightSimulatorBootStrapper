@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using FsBootStrapper.Core.Models;
 using FsBootStrapper.Core.Services.Detection;
 using FsBootStrapper.Core.Services.Launch;
+using FsBootStrapper.Core.Services.Notifications;
 using FsBootStrapper.Core.Services.Profiles;
 using FsBootStrapper.Core.Services.Settings;
 using FsBootStrapper.Services;
@@ -19,6 +20,8 @@ public sealed partial class DashboardViewModel : ViewModelBase
     private readonly IMsfsDetectionService _detection;
     private readonly ILaunchOrchestrator _orchestrator;
     private readonly IAppShutdownService _shutdownService;
+    private readonly IWindowStateService _windowStateService;
+    private readonly INotificationService _notifications;
     private readonly ILogger<DashboardViewModel> _logger;
 
     [ObservableProperty] private ObservableCollection<AppProfile> _availableProfiles = [];
@@ -34,6 +37,8 @@ public sealed partial class DashboardViewModel : ViewModelBase
         IMsfsDetectionService detection,
         ILaunchOrchestrator orchestrator,
         IAppShutdownService shutdownService,
+        IWindowStateService windowStateService,
+        INotificationService notifications,
         ILogger<DashboardViewModel> logger)
     {
         _profiles = profiles;
@@ -41,6 +46,8 @@ public sealed partial class DashboardViewModel : ViewModelBase
         _detection = detection;
         _orchestrator = orchestrator;
         _shutdownService = shutdownService;
+        _windowStateService = windowStateService;
+        _notifications = notifications;
         _logger = logger;
     }
 
@@ -102,14 +109,17 @@ public sealed partial class DashboardViewModel : ViewModelBase
                 StatusMessage = evt.Message;
 
                 if (evt.EventType == Core.Models.LaunchEventType.AutoCloseRequested)
-                {
-                    _shutdownService.RequestShutdown();
-                    System.Windows.Application.Current.Shutdown();
-                }
+                    _ = HandleAutoCloseAsync();
+
+                if (evt.EventType == Core.Models.LaunchEventType.SequenceFailed)
+                    _notifications.Show("Launch Failed", evt.Message, Core.Services.Notifications.NotificationSeverity.Error);
             });
 
             await _orchestrator.LaunchAsync(SelectedProfile, MsfsInstallation, _settings.Current, progress, ct);
             StatusMessage = "All items launched successfully";
+
+            if (_settings.Current.CloseToTrayAfterLaunch)
+                _windowStateService.RequestMinimizeToTray();
         }
         catch (OperationCanceledException)
         {
@@ -119,6 +129,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
         {
             _logger.LogError(ex, "Launch failed");
             StatusMessage = $"Launch failed: {ex.Message}";
+            _notifications.Show("Launch Failed", $"Launch failed: {ex.Message}", Core.Services.Notifications.NotificationSeverity.Error);
         }
         finally
         {
@@ -138,6 +149,14 @@ public sealed partial class DashboardViewModel : ViewModelBase
     partial void OnIsLaunchingChanged(bool value) => LaunchCommand.NotifyCanExecuteChanged();
     partial void OnSelectedProfileChanged(AppProfile? value) => LaunchCommand.NotifyCanExecuteChanged();
     partial void OnMsfsInstallationChanged(MsfsInstallationInfo? value) => LaunchCommand.NotifyCanExecuteChanged();
+
+    private async Task HandleAutoCloseAsync()
+    {
+        _notifications.Show("FsBootStrapper", "All add-ons closed. FSBS shutting down now...", Core.Services.Notifications.NotificationSeverity.Info);
+        await Task.Delay(3000);
+        _shutdownService.RequestShutdown();
+        System.Windows.Application.Current.Dispatcher.Invoke(System.Windows.Application.Current.Shutdown);
+    }
 }
 
 public sealed partial class LaunchProgressItemViewModel : ObservableObject
