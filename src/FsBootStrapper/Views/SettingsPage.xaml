@@ -50,27 +50,27 @@
                     <TextBlock Text="Behavior" Style="{StaticResource SubtitleTextBlockStyle}"/>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"/>
+                        <ui:ToggleSwitch Margin="0,5,3,0" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"/>
                         <TextBlock Text="Minimize to system tray instead of closing" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnAddonCrash, Mode=TwoWay}"/>
+                        <ui:ToggleSwitch Margin="0,5,3,0" IsChecked="{Binding NotifyOnAddonCrash, Mode=TwoWay}"/>
                         <TextBlock Text="Show notification when an add-on crashes" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding NotifyOnMsfsExit, Mode=TwoWay}"/>
+                        <ui:ToggleSwitch Margin="0,5,3,0" IsChecked="{Binding NotifyOnMsfsExit, Mode=TwoWay}"/>
                         <TextBlock Text="Show notification when MSFS 2024 exits" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding AutoCloseFsbsAfterMsfsExit}"/>
+                        <ui:ToggleSwitch Margin="0,5,3,0" IsChecked="{Binding AutoCloseFsbsAfterMsfsExit}"/>
                         <TextBlock Text="Close FsBootStrapper after MSFS and add-ons shut down cleanly" VerticalAlignment="Center" TextWrapping="Wrap"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <ui:ToggleSwitch IsChecked="{Binding CloseToTrayAfterLaunch, Mode=TwoWay}"/>
+                        <ui:ToggleSwitch Margin="0,5,3,0" IsChecked="{Binding CloseToTrayAfterLaunch, Mode=TwoWay}"/>
                         <TextBlock Text="Minimize to tray after successful launch" VerticalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
@@ -93,7 +93,8 @@
                            Icon="{ui:SymbolIcon Save24}"
                            Appearance="Primary"
                            Click="OnSaveSettingsClicked"
-                           Padding="20,8"/>
+                           Padding="20,8"
+                           Margin="0,0,8,0"/>
                 <TextBlock Text="{Binding StatusMessage}"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
