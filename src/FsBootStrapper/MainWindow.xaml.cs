@@ -40,12 +40,17 @@ public partial class MainWindow : FluentWindow
 
     private void InitializeTrayIcon()
     {
+        var iconStream = System.Windows.Application.GetResourceStream(
+            new Uri("pack://application:,,,/Resources/Icons/FSBSIcon.ico"))?.Stream;
+        var trayIcon = iconStream is not null
+            ? new System.Drawing.Icon(iconStream)
+            : System.Drawing.SystemIcons.Application;
+
         _notifyIcon = new System.Windows.Forms.NotifyIcon
         {
             Text = "FsBootStrapper",
             Visible = true,
-            // Use a default icon until a real one is bundled
-            Icon = System.Drawing.SystemIcons.Application
+            Icon = trayIcon
         };
 
         var ctxMenu = new System.Windows.Forms.ContextMenuStrip();
