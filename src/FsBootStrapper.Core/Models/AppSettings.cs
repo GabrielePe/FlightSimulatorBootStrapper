@@ -22,12 +22,12 @@ public sealed class AppSettings
     /// <summary>
     /// Seconds to wait for the MSFS process to appear after launch before giving up.
     /// </summary>
-    public int MsfsProcessWaitTimeoutSeconds { get; set; } = 120;
+    public int MsfsProcessWaitTimeoutSeconds { get; set; } = 30;
 
     /// <summary>
     /// Seconds to poll between process-existence checks while waiting for MSFS.
     /// </summary>
-    public int MsfsProcessPollingIntervalMs { get; set; } = 3_000;
+    public int MsfsProcessPollingIntervalMs { get; set; } = 3000;
 
     /// <summary>Whether the application window should minimise to the system tray.</summary>
     public bool MinimizeToTray { get; set; } = true;
