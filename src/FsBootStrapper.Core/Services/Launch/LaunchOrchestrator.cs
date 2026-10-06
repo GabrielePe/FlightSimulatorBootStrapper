@@ -259,7 +259,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                 });
                 return;
             }
-            await Task.Delay(3_000, ct);
+            await Task.Delay(settings.MsfsProcessPollingIntervalMs, ct);
         }
 
         _logger.LogWarning("MSFS process did not appear within timeout; continuing anyway");
@@ -293,7 +293,7 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                         break;
                     }
 
-                    await Task.Delay(3_000, ct);
+                    await Task.Delay(settings.MsfsProcessPollingIntervalMs, ct);
                 }
             }
 
