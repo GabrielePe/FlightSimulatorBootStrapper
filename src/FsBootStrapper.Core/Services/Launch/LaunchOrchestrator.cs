@@ -343,28 +343,50 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                 if (item.CloseMethod == CloseMethod.GracefulClose)
                 {
                     var timeoutSec = item.GracefulCloseTimeoutMs / 1_000.0;
-                    _progress?.Report(new LaunchProgressEvent
-                    {
-                        EventType = LaunchEventType.ItemClosed,
-                        ItemId = item.Id,
-                        Message = $"Requesting graceful close of '{item.DisplayName}' (timeout: {timeoutSec:0.#}s)..."
-                    });
 
-                    process.CloseMainWindow();
-                    bool exited = await Task.Run(
-                        () => process.WaitForExit(item.GracefulCloseTimeoutMs), ct);
+                    // Signal every top-level window owned by the process (not just the single
+                    // "main" one .NET's CloseMainWindow() guesses at), so tray-only add-ons with
+                    // no visible taskbar window still receive a close request.
+                    int windowsSignaled = NativeWindowCloser.CloseAllWindows(process.Id);
 
-                    if (!exited)
+                    if (windowsSignaled == 0)
                     {
+                        // Nothing to close gracefully (no window at all) — waiting out the
+                        // timeout would just delay the kill for no benefit.
                         _logger.LogWarning(
-                            "'{Name}' did not close gracefully; killing", item.DisplayName);
+                            "'{Name}' exposes no window to close gracefully; killing immediately", item.DisplayName);
                         _progress?.Report(new LaunchProgressEvent
                         {
                             EventType = LaunchEventType.ItemClosed,
                             ItemId = item.Id,
-                            Message = $"'{item.DisplayName}' did not respond within {timeoutSec:0.#}s — forcing kill"
+                            Message = $"'{item.DisplayName}' has no window to close — forcing kill"
                         });
                         process.Kill();
+                    }
+                    else
+                    {
+                        _progress?.Report(new LaunchProgressEvent
+                        {
+                            EventType = LaunchEventType.ItemClosed,
+                            ItemId = item.Id,
+                            Message = $"Requesting graceful close of '{item.DisplayName}' (timeout: {timeoutSec:0.#}s)..."
+                        });
+
+                        bool exited = await Task.Run(
+                            () => process.WaitForExit(item.GracefulCloseTimeoutMs), ct);
+
+                        if (!exited)
+                        {
+                            _logger.LogWarning(
+                                "'{Name}' did not close gracefully; killing", item.DisplayName);
+                            _progress?.Report(new LaunchProgressEvent
+                            {
+                                EventType = LaunchEventType.ItemClosed,
+                                ItemId = item.Id,
+                                Message = $"'{item.DisplayName}' did not respond within {timeoutSec:0.#}s — forcing kill"
+                            });
+                            process.Kill();
+                        }
                     }
                 }
                 else
