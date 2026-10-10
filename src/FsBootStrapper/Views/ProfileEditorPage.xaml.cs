@@ -266,6 +266,8 @@ public partial class ProfileEditorPage : Page
         AutoCloseSupported = src.AutoCloseSupported,
         CloseMethod = src.CloseMethod,
         GracefulCloseTimeoutMs = src.GracefulCloseTimeoutMs,
+        ShutdownProcessName = src.ShutdownProcessName,
+        ShutdownProcessMatchMode = src.ShutdownProcessMatchMode,
         RequiresElevation = src.RequiresElevation,
         WaitForProcess = src.WaitForProcess is null ? null : new()
         {
@@ -287,6 +289,8 @@ public partial class ProfileEditorPage : Page
         dst.AutoCloseSupported = src.AutoCloseSupported;
         dst.CloseMethod = src.CloseMethod;
         dst.GracefulCloseTimeoutMs = src.GracefulCloseTimeoutMs;
+        dst.ShutdownProcessName = src.ShutdownProcessName;
+        dst.ShutdownProcessMatchMode = src.ShutdownProcessMatchMode;
         dst.WaitForProcess = src.WaitForProcess;
     }
 }
