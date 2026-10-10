@@ -3,7 +3,7 @@
 ; ─────────────────────────────────────────────────────────────────────────────
 
 #define AppName      "FsBootStrapper"
-#define AppVersion   "0.0.7"
+#define AppVersion   "0.0.8"
 #define AppPublisher "Gabriele"
 #define AppExeName   "FsBootStrapper.exe"
 #define PublishDir   "publish"
