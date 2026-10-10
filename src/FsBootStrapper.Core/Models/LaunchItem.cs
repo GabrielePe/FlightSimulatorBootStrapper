@@ -51,6 +51,23 @@ public sealed class LaunchItem
     public int GracefulCloseTimeoutMs { get; set; } = 5_000;
 
     /// <summary>
+    /// Optional: process image name (without .exe) FSBS should actually look for and
+    /// close when MSFS exits. Use this when ExecutablePath is a launcher/updater stub
+    /// that spawns the real application under a different process - the stub's own
+    /// PID is useless for closing since it has typically already exited by then.
+    /// Resolved against currently-running processes at shutdown time, independent of
+    /// the PID returned when the item was launched.
+    /// </summary>
+    public string? ShutdownProcessName { get; set; }
+
+    /// <summary>
+    /// How ShutdownProcessName is matched. Exact targets the single process with that
+    /// exact name; Keyword closes every running process whose name contains the text
+    /// - powerful but the user's responsibility to scope correctly.
+    /// </summary>
+    public ProcessMatchMode ShutdownProcessMatchMode { get; set; } = ProcessMatchMode.Exact;
+
+    /// <summary>
     /// Whether this add-on requires administrator privileges to run.
     /// When true and FSBS is already elevated, the process inherits the elevated token (no UAC prompt).
     /// When false and FSBS is elevated, the process is de-elevated to medium integrity

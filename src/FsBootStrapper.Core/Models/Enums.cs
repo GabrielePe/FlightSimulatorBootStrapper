@@ -17,6 +17,20 @@ public enum CloseMethod
     Kill
 }
 
+/// <summary>How a configured shutdown process name is matched against running processes.</summary>
+public enum ProcessMatchMode
+{
+    /// <summary>Exact process image name (case-insensitive, without ".exe").</summary>
+    Exact,
+
+    /// <summary>
+    /// Any running process whose name contains this text (case-insensitive).
+    /// Closes/kills every match - use only when sure no unrelated process on the
+    /// machine shares the keyword, since this is applied to ALL matching processes.
+    /// </summary>
+    Keyword
+}
+
 /// <summary>How MSFS 2024 is installed on this machine.</summary>
 public enum MsfsInstallationType
 {

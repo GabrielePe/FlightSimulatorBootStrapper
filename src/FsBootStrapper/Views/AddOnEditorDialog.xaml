@@ -166,7 +166,39 @@
                 <TextBlock Text="Close method when MSFS exits" Margin="0,0,0,4"/>
                 <ComboBox ItemsSource="{Binding CloseMethods}"
                           SelectedItem="{Binding CloseMethod}"
-                          HorizontalAlignment="Left" MinWidth="180"/>
+                          HorizontalAlignment="Left" MinWidth="180"
+                          Margin="0,0,0,14"/>
+
+                <CheckBox Content="Specify the process to close on MSFS exit"
+                          IsChecked="{Binding ShutdownByProcessNameEnabled}"
+                          ToolTip="Enable if ExecutablePath starts an updater that then spawns the real application under a different process. FSBS will look up the process below when MSFS exits, instead of relying on the (likely already-exited) launcher's PID."
+                          Margin="0,0,0,10"/>
+
+                <Grid Visibility="{Binding ShutdownByProcessNameEnabled, Converter={StaticResource BoolToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="140"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Process name to close (without .exe)" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding ShutdownProcessName, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Match mode" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding ProcessMatchModes}"
+                                  SelectedItem="{Binding ShutdownProcessMatchMode}"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="⚠ Keyword mode closes EVERY running process whose name contains this text — not just this add-on's. Use an exact, specific name unless you are certain it's safe."
+                           Visibility="{Binding ShutdownByProcessNameEnabled, Converter={StaticResource BoolToVis}}"
+                           Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Margin="0,8,0,0"/>
             </StackPanel>
         </StackPanel>
 

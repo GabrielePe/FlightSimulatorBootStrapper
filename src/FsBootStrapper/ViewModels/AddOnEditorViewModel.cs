@@ -32,10 +32,15 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
     // ── Shutdown ─────────────────────────────────────────────────
     [ObservableProperty] private bool _autoCloseSupported;
     [ObservableProperty] private CloseMethod _closeMethod = CloseMethod.GracefulClose;
+    /// <summary>True when the executable is a launcher/updater stub that spawns the real app elsewhere.</summary>
+    [ObservableProperty] private bool _shutdownByProcessNameEnabled;
+    [ObservableProperty] private string _shutdownProcessName = string.Empty;
+    [ObservableProperty] private ProcessMatchMode _shutdownProcessMatchMode = ProcessMatchMode.Exact;
 
     // ── ComboBox sources ─────────────────────────────────────────
     public LaunchPhase[] Phases { get; } = Enum.GetValues<LaunchPhase>();
     public CloseMethod[] CloseMethods { get; } = Enum.GetValues<CloseMethod>();
+    public ProcessMatchMode[] ProcessMatchModes { get; } = Enum.GetValues<ProcessMatchMode>();
 
     /// <summary>
     /// Process name suggestions for the "Wait for" combo (populated with
@@ -55,6 +60,10 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         RequiresElevation = item.RequiresElevation;
         AutoCloseSupported = item.AutoCloseSupported;
         CloseMethod = item.CloseMethod;
+
+        ShutdownByProcessNameEnabled = !string.IsNullOrWhiteSpace(item.ShutdownProcessName);
+        ShutdownProcessName = item.ShutdownProcessName ?? string.Empty;
+        ShutdownProcessMatchMode = item.ShutdownProcessMatchMode;
 
         if (item.WaitForProcess is not null)
         {
@@ -81,6 +90,10 @@ public sealed partial class AddOnEditorViewModel : ObservableObject
         item.RequiresElevation = RequiresElevation;
         item.AutoCloseSupported = AutoCloseSupported;
         item.CloseMethod = CloseMethod;
+        item.ShutdownProcessName = ShutdownByProcessNameEnabled && !string.IsNullOrWhiteSpace(ShutdownProcessName)
+            ? ShutdownProcessName.Trim()
+            : null;
+        item.ShutdownProcessMatchMode = ShutdownProcessMatchMode;
         item.WaitForProcess = WaitForProcessEnabled && !string.IsNullOrWhiteSpace(WaitProcessName)
             ? new Core.Models.WaitCondition
             {

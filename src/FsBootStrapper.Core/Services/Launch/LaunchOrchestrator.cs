@@ -336,58 +336,110 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
         {
             if (item.AutoCloseSupported) continue;
 
+            List<Process> targets;
             try
             {
-                if (process.HasExited) continue;
+                // The PID returned at launch time is only reliable for the process FSBS
+                // actually started. If the item is a launcher/updater stub, that process
+                // has typically already exited (HasExited below filters it out), and the
+                // real target is resolved by name instead.
+                targets = process.HasExited ? [] : [process];
 
-                if (item.CloseMethod == CloseMethod.GracefulClose)
+                if (!string.IsNullOrWhiteSpace(item.ShutdownProcessName))
                 {
-                    var timeoutSec = item.GracefulCloseTimeoutMs / 1_000.0;
-
-                    // Signal every top-level window owned by the process (not just the single
-                    // "main" one .NET's CloseMainWindow() guesses at), so tray-only add-ons with
-                    // no visible taskbar window still receive a close request.
-                    int windowsSignaled = NativeWindowCloser.CloseAllWindows(process.Id);
-
-                    if (windowsSignaled == 0)
+                    var resolved = ResolveShutdownTargets(item, process.Id);
+                    if (item.ShutdownProcessMatchMode == ProcessMatchMode.Keyword && resolved.Count > 0)
                     {
-                        // Nothing to close gracefully (no window at all) — waiting out the
-                        // timeout would just delay the kill for no benefit.
                         _logger.LogWarning(
-                            "'{Name}' exposes no window to close gracefully; killing immediately", item.DisplayName);
-                        _progress?.Report(new LaunchProgressEvent
-                        {
-                            EventType = LaunchEventType.ItemClosed,
-                            ItemId = item.Id,
-                            Message = $"'{item.DisplayName}' has no window to close — forcing kill"
-                        });
-                        process.Kill();
+                            "'{Name}': keyword '{Keyword}' matched {Count} running process(es); closing all of them",
+                            item.DisplayName, item.ShutdownProcessName, resolved.Count);
                     }
-                    else
+                    targets.AddRange(resolved);
+                }
+            }
+            catch (Exception ex)
+            {
+                allClosedCleanly = false;
+                _logger.LogWarning(ex, "Error resolving shutdown target(s) for '{Name}'", item.DisplayName);
+                continue;
+            }
+
+            foreach (var target in targets)
+            {
+                bool closed = await CloseProcessAsync(target, item, ct);
+                allClosedCleanly &= closed;
+                target.Dispose();
+            }
+        }
+
+        _running.Clear();
+        _monitor.UntrackAll();
+        return allClosedCleanly;
+    }
+
+    /// <summary>
+    /// Finds the process(es) matching <see cref="LaunchItem.ShutdownProcessName"/>,
+    /// excluding <paramref name="excludePid"/> (already handled separately by the caller).
+    /// Disposes every non-matching <see cref="Process"/> handle it opens along the way.
+    /// </summary>
+    private static List<Process> ResolveShutdownTargets(LaunchItem item, int excludePid)
+    {
+        var result = new List<Process>();
+
+        if (item.ShutdownProcessMatchMode == ProcessMatchMode.Exact)
+        {
+            foreach (var p in Process.GetProcessesByName(item.ShutdownProcessName!))
+            {
+                if (p.Id == excludePid) { p.Dispose(); continue; }
+                result.Add(p);
+            }
+            return result;
+        }
+
+        // Keyword mode: scan every process on the machine for a substring match.
+        var keyword = item.ShutdownProcessName!;
+        foreach (var p in Process.GetProcesses())
+        {
+            bool matches;
+            try { matches = p.Id != excludePid && p.ProcessName.Contains(keyword, StringComparison.OrdinalIgnoreCase); }
+            catch { matches = false; }
+
+            if (matches) result.Add(p);
+            else p.Dispose();
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Applies the item's configured close behavior to a single resolved process.
+    /// </summary>
+    private async Task<bool> CloseProcessAsync(Process process, LaunchItem item, CancellationToken ct)
+    {
+        try
+        {
+            if (item.CloseMethod == CloseMethod.GracefulClose)
+            {
+                var timeoutSec = item.GracefulCloseTimeoutMs / 1_000.0;
+
+                // Signal every top-level window owned by the process (not just the single
+                // "main" one .NET's CloseMainWindow() guesses at), so tray-only add-ons with
+                // no visible taskbar window still receive a close request.
+                int windowsSignaled = NativeWindowCloser.CloseAllWindows(process.Id);
+
+                if (windowsSignaled == 0)
+                {
+                    // Nothing to close gracefully (no window at all) — waiting out the
+                    // timeout would just delay the kill for no benefit.
+                    _logger.LogWarning(
+                        "'{Name}' (PID {Pid}) exposes no window to close gracefully; killing immediately",
+                        item.DisplayName, process.Id);
+                    _progress?.Report(new LaunchProgressEvent
                     {
-                        _progress?.Report(new LaunchProgressEvent
-                        {
-                            EventType = LaunchEventType.ItemClosed,
-                            ItemId = item.Id,
-                            Message = $"Requesting graceful close of '{item.DisplayName}' (timeout: {timeoutSec:0.#}s)..."
-                        });
-
-                        bool exited = await Task.Run(
-                            () => process.WaitForExit(item.GracefulCloseTimeoutMs), ct);
-
-                        if (!exited)
-                        {
-                            _logger.LogWarning(
-                                "'{Name}' did not close gracefully; killing", item.DisplayName);
-                            _progress?.Report(new LaunchProgressEvent
-                            {
-                                EventType = LaunchEventType.ItemClosed,
-                                ItemId = item.Id,
-                                Message = $"'{item.DisplayName}' did not respond within {timeoutSec:0.#}s — forcing kill"
-                            });
-                            process.Kill();
-                        }
-                    }
+                        EventType = LaunchEventType.ItemClosed,
+                        ItemId = item.Id,
+                        Message = $"'{item.DisplayName}' (PID {process.Id}) has no window to close — forcing kill"
+                    });
+                    process.Kill();
                 }
                 else
                 {
@@ -395,36 +447,58 @@ public sealed class LaunchOrchestrator : ILaunchOrchestrator
                     {
                         EventType = LaunchEventType.ItemClosed,
                         ItemId = item.Id,
-                        Message = $"Killing '{item.DisplayName}'..."
+                        Message = $"Requesting graceful close of '{item.DisplayName}' (PID {process.Id}, timeout: {timeoutSec:0.#}s)..."
                     });
-                    process.Kill();
-                }
 
-                _logger.LogInformation("Closed '{Name}'", item.DisplayName);
+                    bool exited = await Task.Run(
+                        () => process.WaitForExit(item.GracefulCloseTimeoutMs), ct);
+
+                    if (!exited)
+                    {
+                        _logger.LogWarning(
+                            "'{Name}' (PID {Pid}) did not close gracefully; killing", item.DisplayName, process.Id);
+                        _progress?.Report(new LaunchProgressEvent
+                        {
+                            EventType = LaunchEventType.ItemClosed,
+                            ItemId = item.Id,
+                            Message = $"'{item.DisplayName}' did not respond within {timeoutSec:0.#}s — forcing kill"
+                        });
+                        process.Kill();
+                    }
+                }
+            }
+            else
+            {
                 _progress?.Report(new LaunchProgressEvent
                 {
                     EventType = LaunchEventType.ItemClosed,
                     ItemId = item.Id,
-                    Message = $"'{item.DisplayName}' closed"
+                    Message = $"Killing '{item.DisplayName}' (PID {process.Id})..."
                 });
+                process.Kill();
             }
-            catch (Exception ex)
-            {
-                allClosedCleanly = false;
-                _logger.LogWarning(ex, "Error closing '{Name}'", item.DisplayName);
-                _progress?.Report(new LaunchProgressEvent
-                {
-                    EventType = LaunchEventType.ItemFailed,
-                    ItemId = item.Id,
-                    Message = $"Error closing '{item.DisplayName}': {ex.Message}",
-                    Exception = ex
-                });
-            }
-        }
 
-        _running.Clear();
-        _monitor.UntrackAll();
-        return allClosedCleanly;
+            _logger.LogInformation("Closed '{Name}' (PID {Pid})", item.DisplayName, process.Id);
+            _progress?.Report(new LaunchProgressEvent
+            {
+                EventType = LaunchEventType.ItemClosed,
+                ItemId = item.Id,
+                Message = $"'{item.DisplayName}' closed"
+            });
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error closing '{Name}' (PID {Pid})", item.DisplayName, process.Id);
+            _progress?.Report(new LaunchProgressEvent
+            {
+                EventType = LaunchEventType.ItemFailed,
+                ItemId = item.Id,
+                Message = $"Error closing '{item.DisplayName}': {ex.Message}",
+                Exception = ex
+            });
+            return false;
+        }
     }
 
     private static async Task<bool> WaitForProcessAsync(WaitCondition condition, CancellationToken ct)
